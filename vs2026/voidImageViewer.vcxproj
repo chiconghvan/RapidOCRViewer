@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
@@ -537,7 +537,7 @@
     <ClCompile>
       <AdditionalOptions>/MP /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;$(VCPKG_ROOT)\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_DEBUG;VERSION_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -551,7 +551,7 @@
     <Link>
       <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)voidImageViewer.exe</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft Visual Studio 8\VC\PlatformSDK\Lib\AMD64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VCPKG_ROOT)\installed\x64-windows\lib;C:\Program Files (x86)\Microsoft Visual Studio 8\VC\PlatformSDK\Lib\AMD64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)voidImageViewer.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -560,6 +560,9 @@
     <Manifest>
       <AdditionalManifestFiles>../res/voidImageViewer.Manifest</AdditionalManifestFiles>
     </Manifest>
+    <PostBuildEvent>
+      <Command>if exist "..\tessdata\vie.traineddata" ( mkdir "$(OutDir)tessdata" 2&gt;nul &amp; copy /Y "..\tessdata\vie.traineddata" "$(OutDir)tessdata\vie.traineddata" )</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <Midl />
@@ -708,7 +711,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;$(VCPKG_ROOT)\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -723,6 +726,7 @@
     </ProjectReference>
     <Link>
       <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VCPKG_ROOT)\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ShowProgress>NotSet</ShowProgress>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -733,6 +737,9 @@
     <Manifest>
       <AdditionalManifestFiles>..\res\voidImageViewer.Manifest</AdditionalManifestFiles>
     </Manifest>
+    <PostBuildEvent>
+      <Command>if exist "..\tessdata\vie.traineddata" ( mkdir "$(OutDir)tessdata" 2&gt;nul &amp; copy /Y "..\tessdata\vie.traineddata" "$(OutDir)tessdata\vie.traineddata" )</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <PreBuildEvent>
@@ -1617,6 +1624,7 @@
     <ClCompile Include="..\src\ini.c" />
     <ClCompile Include="..\src\localization.c" />
     <ClCompile Include="..\src\mem.c" />
+    <ClCompile Include="..\src\ocr_panel.c" />
     <ClCompile Include="..\src\os.c" />
     <ClCompile Include="..\src\safe_size.c" />
     <ClCompile Include="..\src\small_pool.c" />
@@ -1625,6 +1633,7 @@
     <ClCompile Include="..\src\viv.c" />
     <ClCompile Include="..\src\wchar.c" />
     <ClCompile Include="..\src\webp.c" />
+    <ClCompile Include="..\src\ocr_engine.cpp"><CompileAs>CompileAsCpp</CompileAs></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libwebp\src\dec\alphai_dec.h" />
@@ -1668,6 +1677,8 @@
     <ClInclude Include="..\src\localization_en_us.h" />
     <ClInclude Include="..\src\localization_zh_cn.h" />
     <ClInclude Include="..\src\mem.h" />
+    <ClInclude Include="..\src\ocr_engine.h" />
+    <ClInclude Include="..\src\ocr_panel.h" />
     <ClInclude Include="..\src\os.h" />
     <ClInclude Include="..\src\render.h" />
     <ClInclude Include="..\src\render_d3d.h" />

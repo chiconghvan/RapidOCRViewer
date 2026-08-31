@@ -1,0 +1,42 @@
+# Build output directories
+vs2026/x64/
+vs2026/voidImageViewer/x64/
+vs2026/voidImageViewer/Debug/
+vs2026/voidImageViewer/Release/
+
+# Distribution artifacts
+dist/
+
+# Visual Studio user files
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj.filters
+*.vcxproj.user
+*.vc.db
+*.vc.VC.db
+
+# Compiled binaries
+*.exe
+*.pdb
+*.obj
+*.lib
+*.dll
+*.exp
+*.ilk
+*.iobj
+*.ipdb
+*.tlog
+*.log
+*.manifest
+*.lastbuildstate
+*.unsuccessfulbuild
+
+# Build directories (generic)
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww]in32/
+[Oo]bj/

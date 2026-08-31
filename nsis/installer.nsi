@@ -395,7 +395,12 @@ skip_webp_association:
 		
 	!endif
 
+	; OCR tessdata (Vietnamese)
+	SetOutPath "$pluginsdir\voidImageViewer\tessdata"
+	File /nonfatal "..\tessdata\vie.traineddata"
+
 	; File "..\Changes.txt"
+	SetOutPath "$pluginsdir\voidImageViewer"
 	WriteUninstaller "$pluginsdir\voidImageViewer\Uninstall.exe"
 
 	; check for command line options that will override the default install options.

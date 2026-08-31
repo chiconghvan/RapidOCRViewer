@@ -288,6 +288,8 @@
 #define _VIV_STRETCH_BLT_STITCH_SIZE		512
 
 #include "viv.h"
+#include "ocr_engine.h"
+#include "ocr_panel.h"
 
 enum
 {
@@ -303,6 +305,7 @@ enum
 	_VIV_DOING_SCROLL,
 	_VIV_DOING_MSCROLL,
 	_VIV_DOING_1TO1SCROLL,
+	_VIV_DOING_OCR_SELECT,
 };
 
 enum
@@ -330,6 +333,7 @@ enum
 	_VIV_MENU_NAVIGATE,
 	_VIV_MENU_NAVIGATE_SORT,
 	_VIV_MENU_NAVIGATE_PLAYLIST,
+	_VIV_MENU_OCR,
 	_VIV_MENU_HELP,
 	_VIV_MENU_COUNT,
 };
@@ -792,6 +796,26 @@ static BYTE _viv_is_prevent_sleep = 0;
 static DWORD last_process_command_line_tick;
 static BYTE got_last_process_command_line_tick = 0;
 
+// OCR state
+static BYTE _viv_ocr_mode = 0;
+static BYTE _viv_ocr_selecting = 0;
+static POINT _viv_ocr_start_pt = {0,0};
+static POINT _viv_ocr_current_pt = {0,0};
+static HANDLE _viv_ocr_thread = 0;
+static BYTE _viv_ocr_busy = 0;
+static RECT _viv_ocr_last_src_rect = {0,0,0,0};
+static void _viv_ocr_toggle(void);
+static void _viv_ocr_start_selection(int x,int y);
+static void _viv_ocr_update_selection(int x,int y);
+static void _viv_ocr_finish_selection(int x,int y);
+static void _viv_ocr_draw_selection(HDC hdc, RECT imageArea);
+static int _viv_ocr_client_to_src_rect(RECT selClient, RECT *outSrc);
+static void _viv_ocr_get_image_area(RECT *out);
+static void _viv_ocr_run(RECT srcRect);
+static DWORD WINAPI _viv_ocr_thread_proc(LPVOID param);
+static void _viv_ocr_copy(void);
+static void _viv_ocr_clear_panel_on_image_change(void);
+
 //static BYTE _viv_is_alt = 0;
 
 // MF_OWNERDRAW = don't show in menu.
@@ -955,6 +979,9 @@ static _viv_command_t _viv_commands[] =
 	{LOCALIZATION_ID_INVALID,MF_SEPARATOR,_VIV_MENU_NAVIGATE,0},
 	{LOCALIZATION_ID_JUMP_TO,MF_STRING,_VIV_MENU_NAVIGATE,VIV_ID_NAV_JUMPTO},
 
+	{LOCALIZATION_ID_OCR,MF_POPUP,_VIV_MENU_ROOT,_VIV_MENU_OCR},
+	{LOCALIZATION_ID_OCR_FAST_OCR,MF_STRING,_VIV_MENU_OCR,VIV_ID_OCR_TOGGLE},
+
 	{LOCALIZATION_ID_HELP,MF_POPUP,_VIV_MENU_ROOT,_VIV_MENU_HELP},
 	{LOCALIZATION_ID_HELP_MENU,MF_STRING,_VIV_MENU_HELP,VIV_ID_HELP_HELP},
 	{LOCALIZATION_ID_COMMAND_LINE_OPTIONS,MF_STRING,_VIV_MENU_HELP,VIV_ID_HELP_COMMAND_LINE_OPTIONS},
@@ -1044,6 +1071,7 @@ _viv_default_key_t _viv_default_keys[] =
 	{VIV_ID_NAV_HOME,VK_HOME},
 	{VIV_ID_NAV_END,VK_END},
 	{VIV_ID_NAV_JUMPTO,'J'},
+	{VIV_ID_OCR_TOGGLE,CONFIG_KEYFLAG_CTRL | CONFIG_KEYFLAG_SHIFT | 'O'},
 	{VIV_ID_HELP_HELP,VK_F1},
 	{VIV_ID_HELP_ABOUT,CONFIG_KEYFLAG_CTRL | VK_F1},
 };
@@ -1214,6 +1242,251 @@ HMODULE LoadUnicowsProc(void)
 }
 
 #endif
+
+// ==================== OCR helpers ====================
+static void _viv_ocr_get_image_area(RECT *out) {
+    RECT rc;
+    GetClientRect(_viv_hwnd, &rc);
+    int w = rc.right - rc.left;
+    int h = rc.bottom - rc.top - _viv_get_status_high() - _viv_get_controls_high();
+    int panelW = ocr_panel_is_visible() ? OCR_PANEL_WIDTH : 0;
+    if (panelW > w) panelW = w;
+    out->left = 0;
+    out->top = 0;
+    out->right = w - panelW;
+    out->bottom = h;
+}
+
+static int _viv_ocr_client_to_src_rect(RECT selClient, RECT *outSrc) {
+    if (!_viv_image_wide || !_viv_image_high || !_viv_frame_count) return 0;
+    RECT area;
+    _viv_ocr_get_image_area(&area);
+    int wide = area.right - area.left;
+    int high = area.bottom - area.top;
+    if (wide<=0 || high<=0) return 0;
+    int rw, rh;
+    _viv_get_render_size(&rw,&rh);
+    if (rw<=0 || rh<=0) return 0;
+    int rx = (((_viv_dst_pos_x - 250) * (wide*2)) / 1000) - (rw / 2) - _viv_view_x;
+    int ry = (((_viv_dst_pos_y - 250) * (high*2)) / 1000) - (rh / 2) - _viv_view_y;
+    // clamp sel to area
+    if (selClient.left < area.left) selClient.left = area.left;
+    if (selClient.top < area.top) selClient.top = area.top;
+    if (selClient.right > area.right) selClient.right = area.right;
+    if (selClient.bottom > area.bottom) selClient.bottom = area.bottom;
+    int w = selClient.right - selClient.left;
+    int h = selClient.bottom - selClient.top;
+    if (w < 5 || h < 5) return 0;
+    // map client -> src
+    double fx = (double)_viv_image_wide / (double)rw;
+    double fy = (double)_viv_image_high / (double)rh;
+    int sx = (int)((selClient.left - rx) * fx + 0.5);
+    int sy = (int)((selClient.top - ry) * fy + 0.5);
+    int ex = (int)((selClient.right - rx) * fx + 0.5);
+    int ey = (int)((selClient.bottom - ry) * fy + 0.5);
+    if (sx < 0) sx = 0;
+    if (sy < 0) sy = 0;
+    if (ex > _viv_image_wide) ex = _viv_image_wide;
+    if (ey > _viv_image_high) ey = _viv_image_high;
+    if (ex - sx < 5 || ey - sy < 5) return 0;
+    outSrc->left = sx;
+    outSrc->top = sy;
+    outSrc->right = ex;
+    outSrc->bottom = ey;
+    return 1;
+}
+
+static void _viv_ocr_draw_selection(HDC hdc, RECT imageArea) {
+    if (!_viv_ocr_selecting) return;
+    RECT r;
+    r.left = _viv_ocr_start_pt.x < _viv_ocr_current_pt.x ? _viv_ocr_start_pt.x : _viv_ocr_current_pt.x;
+    r.top = _viv_ocr_start_pt.y < _viv_ocr_current_pt.y ? _viv_ocr_start_pt.y : _viv_ocr_current_pt.y;
+    r.right = _viv_ocr_start_pt.x > _viv_ocr_current_pt.x ? _viv_ocr_start_pt.x : _viv_ocr_current_pt.x;
+    r.bottom = _viv_ocr_start_pt.y > _viv_ocr_current_pt.y ? _viv_ocr_start_pt.y : _viv_ocr_current_pt.y;
+    // clamp to image area
+    if (r.left < imageArea.left) r.left = imageArea.left;
+    if (r.top < imageArea.top) r.top = imageArea.top;
+    if (r.right > imageArea.right) r.right = imageArea.right;
+    if (r.bottom > imageArea.bottom) r.bottom = imageArea.bottom;
+    // draw dashed rect
+    HPEN pen = CreatePen(PS_DOT, 1, RGB(0,120,215));
+    HBRUSH br = CreateSolidBrush(RGB(0,120,215));
+    HGDIOBJ oldPen = SelectObject(hdc, pen);
+    HGDIOBJ oldBr = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+    int oldRop = SetROP2(hdc, R2_COPYPEN);
+    Rectangle(hdc, r.left, r.top, r.right, r.bottom);
+    SetROP2(hdc, oldRop);
+    SelectObject(hdc, oldPen);
+    SelectObject(hdc, oldBr);
+    DeleteObject(pen);
+    DeleteObject(br);
+    // semi transparent overlay
+    // draw crosshair info small
+}
+
+typedef struct { RECT srcRect; HBITMAP hbitmap; HWND hwnd; } ocr_thread_param_t;
+
+static void _viv_ocr_run(RECT srcRect) {
+    if (_viv_ocr_busy) return;
+    if (!_viv_frames || !_viv_frame_count) return;
+    HBITMAP srcBmp = _viv_frames[_viv_frame_position].hbitmap;
+    if (!srcBmp) return;
+    _viv_ocr_last_src_rect = srcRect;
+    // show panel immediately
+    if (!ocr_panel_is_visible()) {
+        ocr_panel_show(TRUE);
+    }
+    wchar_t status[64];
+    string_copy_utf8_string(status, localization_get_string(LOCALIZATION_ID_OCR_RECOGNIZING));
+    ocr_panel_set_status(status);
+    // init engine lazily
+    if (!ocr_is_available()) {
+        wchar_t exePath[STRING_SIZE];
+        wchar_t tessPath[STRING_SIZE];
+        string_get_exe_path(exePath);
+        string_path_combine_utf8(tessPath, exePath, (const utf8_t*)"tessdata");
+        // also try exe parent if tessdata is sibling to exe dir
+        ocr_init(tessPath);
+        // Fallback: try exe dir itself
+        if (!ocr_is_available()) {
+            ocr_init(exePath);
+        }
+    }
+    ocr_thread_param_t *p = (ocr_thread_param_t*)mem_alloc(sizeof(ocr_thread_param_t));
+    p->srcRect = srcRect;
+    p->hbitmap = srcBmp;
+    p->hwnd = _viv_hwnd;
+    _viv_ocr_busy = 1;
+    DWORD tid;
+    _viv_ocr_thread = CreateThread(NULL,0,_viv_ocr_thread_proc,p,0,&tid);
+    if (!_viv_ocr_thread) {
+        _viv_ocr_busy = 0;
+        mem_free(p);
+    }
+}
+
+static DWORD WINAPI _viv_ocr_thread_proc(LPVOID param) {
+    ocr_thread_param_t *p = (ocr_thread_param_t*)param;
+    RECT rc = p->srcRect;
+    HBITMAP hb = p->hbitmap;
+    HWND hwnd = p->hwnd;
+    mem_free(p);
+    wchar_t *res = ocr_recognize_hbitmap(hb, rc);
+    if (res) {
+        // post to UI thread; allocate copy for message
+        size_t len = wcslen(res)+1;
+        wchar_t *copy = (wchar_t*)mem_alloc(len * sizeof(wchar_t));
+        wcscpy_s(copy, len, res);
+        ocr_free_result(res);
+        PostMessage(hwnd, WM_OCR_DONE, 0, (LPARAM)copy);
+    } else {
+        const char *err = ocr_get_last_error();
+        wchar_t werr[512];
+        if (err && *err) {
+            MultiByteToWideChar(CP_UTF8,0,err,-1,werr,512);
+        } else {
+            string_copy_utf8_string(werr, localization_get_string(LOCALIZATION_ID_OCR_FAILED));
+        }
+        size_t len = wcslen(werr)+1;
+        wchar_t *copy = (wchar_t*)mem_alloc(len * sizeof(wchar_t));
+        wcscpy_s(copy,len,werr);
+        PostMessage(hwnd, WM_OCR_ERROR, 0, (LPARAM)copy);
+    }
+    return 0;
+}
+
+static void _viv_ocr_copy(void) {
+    HWND edit = GetDlgItem(ocr_panel_get_hwnd(), 40051);
+    if (!edit) return;
+    int len = GetWindowTextLengthW(edit);
+    if (len <= 0) return;
+    wchar_t *buf = (wchar_t*)mem_alloc((len+1)*sizeof(wchar_t));
+    GetWindowTextW(edit, buf, len+1);
+    if (OpenClipboard(_viv_hwnd)) {
+        EmptyClipboard();
+        size_t bytes = (wcslen(buf)+1)*sizeof(wchar_t);
+        HGLOBAL h = GlobalAlloc(GMEM_MOVEABLE, bytes);
+        if (h) {
+            void *dst = GlobalLock(h);
+            memcpy(dst, buf, bytes);
+            GlobalUnlock(h);
+            SetClipboardData(CF_UNICODETEXT, h);
+        }
+        CloseClipboard();
+    }
+    mem_free(buf);
+}
+
+static void _viv_ocr_toggle(void) {
+    _viv_ocr_mode = !_viv_ocr_mode;
+    if (_viv_ocr_mode) {
+        // entering OCR mode: show panel placeholder if not visible? Keep hidden until first ocr
+        // Change cursor hint via status
+        wchar_t *tip = L"Fast OCR: kéo để chọn vùng";
+        _viv_status_set_temp_text(tip);
+    } else {
+        _viv_ocr_selecting = 0;
+        _viv_doing = _VIV_DOING_NOTHING;
+        ReleaseCapture();
+        InvalidateRect(_viv_hwnd,NULL,FALSE);
+        wchar_t *tip = L"Đã thoát Fast OCR";
+        _viv_status_set_temp_text(tip);
+    }
+    // update menu check
+    // will be reflected in _viv_check_menus
+    InvalidateRect(_viv_hwnd,NULL,FALSE);
+}
+
+static void _viv_ocr_start_selection(int x,int y) {
+    RECT area; _viv_ocr_get_image_area(&area);
+    if (x < area.left || x >= area.right || y < area.top || y >= area.bottom) return;
+    if (!_viv_image_wide || !_viv_frame_count) {
+        wchar_t msg[64]; string_copy_utf8_string(msg, localization_get_string(LOCALIZATION_ID_OCR_NO_IMAGE));
+        if (!ocr_panel_is_visible()) ocr_panel_show(TRUE);
+        ocr_panel_set_status(msg);
+        return;
+    }
+    _viv_ocr_selecting = 1;
+    _viv_ocr_start_pt.x = x; _viv_ocr_start_pt.y = y;
+    _viv_ocr_current_pt.x = x; _viv_ocr_current_pt.y = y;
+    _viv_doing = _VIV_DOING_OCR_SELECT;
+    SetCapture(_viv_hwnd);
+    SetCursor(LoadCursor(NULL, IDC_CROSS));
+}
+
+static void _viv_ocr_update_selection(int x,int y) {
+    if (!_viv_ocr_selecting) return;
+    _viv_ocr_current_pt.x = x; _viv_ocr_current_pt.y = y;
+    InvalidateRect(_viv_hwnd,NULL,FALSE);
+}
+
+static void _viv_ocr_finish_selection(int x,int y) {
+    if (!_viv_ocr_selecting) return;
+    _viv_ocr_selecting = 0;
+    _viv_doing = _VIV_DOING_NOTHING;
+    ReleaseCapture();
+    _viv_ocr_current_pt.x = x; _viv_ocr_current_pt.y = y;
+    RECT sel; sel.left = _viv_ocr_start_pt.x < _viv_ocr_current_pt.x ? _viv_ocr_start_pt.x : _viv_ocr_current_pt.x;
+    sel.top = _viv_ocr_start_pt.y < _viv_ocr_current_pt.y ? _viv_ocr_start_pt.y : _viv_ocr_current_pt.y;
+    sel.right = _viv_ocr_start_pt.x > _viv_ocr_current_pt.x ? _viv_ocr_start_pt.x : _viv_ocr_current_pt.x;
+    sel.bottom = _viv_ocr_start_pt.y > _viv_ocr_current_pt.y ? _viv_ocr_start_pt.y : _viv_ocr_current_pt.y;
+    if (sel.right - sel.left < 5 || sel.bottom - sel.top < 5) {
+        InvalidateRect(_viv_hwnd,NULL,FALSE);
+        return;
+    }
+    RECT src;
+    if (_viv_ocr_client_to_src_rect(sel, &src)) {
+        _viv_ocr_run(src);
+    }
+    InvalidateRect(_viv_hwnd,NULL,FALSE);
+}
+
+static void _viv_ocr_clear_panel_on_image_change(void) {
+    // Clear per user request: tự xóa khi đổi ảnh, nhưng vẫn ở OCR mode để vẽ tiếp
+    if (_viv_ocr_mode) {
+        ocr_panel_clear();
+    }
+}
 
 static void _viv_update_title(void)
 {
@@ -1444,6 +1717,7 @@ debug_printf("CURRENTLY LOADING %S preload %d\n",_viv_load_image_filename,_viv_l
 
 	if (!is_preload)
 	{
+		_viv_ocr_clear_panel_on_image_change();
 		if (_viv_file_not_found)
 		{
 			_viv_file_not_found = 0;
@@ -1632,6 +1906,16 @@ static void _viv_on_size(void)
 			SetWindowPos(_viv_toolbar_hwnd,0,(wide / 2) - (toolbar_wide /2),6,toolbar_wide,_viv_get_controls_high() - 6,SWP_NOZORDER|SWP_NOACTIVATE);
 			
 			high -= _viv_get_controls_high();
+		}
+
+		// OCR panel layout
+		if (ocr_panel_is_visible())
+		{
+			RECT cr; GetClientRect(_viv_hwnd, &cr);
+			ocr_panel_on_size(cr);
+			// image area excludes panel; adjust wide for view calc
+			wide -= OCR_PANEL_WIDTH;
+			if (wide < 0) wide = 0;
 		}
 		
 		{
@@ -2571,6 +2855,16 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 				
 			break;
 		}
+
+		case VIV_ID_OCR_TOGGLE:
+			_viv_ocr_toggle();
+			break;
+		case VIV_ID_OCR_COPY:
+			_viv_ocr_copy();
+			break;
+		case VIV_ID_OCR_CLEAR:
+			ocr_panel_clear();
+			break;
 	}
 }
 
@@ -3322,6 +3616,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			_viv_show_cursor();
 			_viv_update_show_cursor();
 			
+			if (_viv_ocr_mode) {
+				_viv_ocr_start_selection(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				return 0;
+			}
 			_viv_do_left_click_action(config_left_click_action);
 		
 			break;
@@ -3584,7 +3882,21 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 
 			break;
 			
+		case WM_SETCURSOR:
+			if (_viv_ocr_mode && LOWORD(lParam)==HTCLIENT) {
+				RECT area; _viv_ocr_get_image_area(&area);
+				POINT pt; GetCursorPos(&pt); ScreenToClient(hwnd,&pt);
+				if (PtInRect(&area, pt)) { SetCursor(LoadCursor(NULL, IDC_CROSS)); return TRUE; }
+			}
+			break;
+
 		case WM_MOUSEMOVE:
+
+			if (_viv_ocr_mode && _viv_doing == _VIV_DOING_OCR_SELECT) {
+				_viv_ocr_update_selection(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				_viv_update_src_pixel(0,1);
+				break;
+			}
 
 			if (!_viv_is_tracking_mouse)
 			{
@@ -3665,7 +3977,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			
 		case WM_LBUTTONUP:
 		case WM_MBUTTONUP:
-		
+			if (_viv_doing == _VIV_DOING_OCR_SELECT) {
+				_viv_ocr_finish_selection(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+			}
 			_viv_doing_cancel();
 			
 			break;
@@ -3906,6 +4221,30 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			
 			break;
 		}
+
+		case WM_OCR_DONE:
+		{
+			wchar_t *txt = (wchar_t*)lParam;
+			_viv_ocr_busy = 0;
+			if (_viv_ocr_thread) { CloseHandle(_viv_ocr_thread); _viv_ocr_thread=0; }
+			if (txt) {
+				// trim?
+				ocr_panel_set_text(txt);
+				mem_free(txt);
+			}
+			break;
+		}
+		case WM_OCR_ERROR:
+		{
+			wchar_t *txt = (wchar_t*)lParam;
+			_viv_ocr_busy = 0;
+			if (_viv_ocr_thread) { CloseHandle(_viv_ocr_thread); _viv_ocr_thread=0; }
+			if (txt) {
+				ocr_panel_set_text(txt);
+				mem_free(txt);
+			}
+			break;
+		}
 		
 		case WM_CLOSE:
 			_viv_exit();
@@ -4070,6 +4409,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			GetClientRect(hwnd,&rect);
 			wide = rect.right - rect.left;
 			high = rect.bottom - rect.top - _viv_get_status_high() - _viv_get_controls_high();
+			if (ocr_panel_is_visible()) {
+				wide -= OCR_PANEL_WIDTH;
+				if (wide < 0) wide = 0;
+			}
 
 			if (BeginPaint(hwnd,&ps))
 			{
@@ -4405,6 +4748,20 @@ debug_printf("PAINT %d %d %d\n",_viv_frame_position,rw,rh);
 				}
 				
 				_viv_is_animation_paint = 0;
+
+				// OCR selection overlay
+				if (_viv_ocr_selecting || _viv_ocr_mode) {
+					RECT area; _viv_ocr_get_image_area(&area);
+					_viv_ocr_draw_selection(ps.hdc, area);
+					// draw mode indicator
+					if (_viv_ocr_mode && !_viv_ocr_selecting) {
+						wchar_t *txt = L"Fast OCR: kéo để chọn vùng  (Ctrl+Shift+O để thoát)";
+						SetBkMode(ps.hdc, TRANSPARENT);
+						SetTextColor(ps.hdc, RGB(0,120,215));
+						RECT tr = { area.left+6, area.top+6, area.right-6, area.top+22 };
+						DrawTextW(ps.hdc, txt, -1, &tr, DT_LEFT|DT_SINGLELINE|DT_NOPREFIX);
+					}
+				}
 				
 				DeleteObject(update_hrgn);
 				
@@ -4699,6 +5056,15 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 		_viv_install_copy_file(install_path,temp_path,(const utf8_t *)"voidImageViewer.exe",1);
 		_viv_install_copy_file(install_path,temp_path,(const utf8_t *)"Uninstall.exe",0);
 		_viv_install_copy_file(install_path,temp_path,(const utf8_t *)"Changes.txt",0);
+		// OCR tessdata
+		{
+			wchar_t tess_src[STRING_SIZE], tess_dst_dir[STRING_SIZE], tess_dst[STRING_SIZE];
+			string_path_combine_utf8(tess_src, temp_path, (const utf8_t *)"tessdata\\vie.traineddata");
+			string_path_combine_utf8(tess_dst_dir, install_path, (const utf8_t *)"tessdata");
+			CreateDirectoryW(tess_dst_dir, NULL);
+			string_path_combine_utf8(tess_dst, install_path, (const utf8_t *)"tessdata\\vie.traineddata");
+			CopyFileW(tess_src, tess_dst, FALSE);
+		}
 		
 		if (install_options[0])
 		{
@@ -4728,6 +5094,12 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"Uninstall.exe");
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"Changes.txt");
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"voidImageViewer.ini");
+		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"tessdata\\vie.traineddata");
+		{
+			wchar_t tess_dir[STRING_SIZE];
+			string_path_combine_utf8(tess_dir, uninstall_path, (const utf8_t *)"tessdata");
+			RemoveDirectoryW(tess_dir);
+		}
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"voidImageViewer.exe");
 		
 		RemoveDirectory(uninstall_path);
@@ -5414,6 +5786,7 @@ static int _viv_init(int nCmdShow)
 		
 	_viv_status_show(config_show_status);
 	_viv_controls_show(config_show_controls);
+	ocr_panel_create(_viv_hwnd);
 	
 	DragAcceptFiles(_viv_hwnd,TRUE);
 
@@ -5493,6 +5866,9 @@ static void _viv_kill(void)
 	_viv_clear_preload_frames();
 	_viv_clear();
 	_viv_process_pending_clear();
+	ocr_panel_destroy();
+	ocr_shutdown();
+	if (_viv_ocr_thread) { WaitForSingleObject(_viv_ocr_thread, 1000); CloseHandle(_viv_ocr_thread); _viv_ocr_thread=0; }
 
 	if (_viv_hwnd)
 	{
@@ -5833,6 +6209,7 @@ debug_printf("_viv_next %d %d\n",prev,is_preload);
 	else
 	{
 		_viv_last_is_prev = prev;
+		if (!is_preload) _viv_ocr_clear_panel_on_image_change();
 	}
 
 //TODO: review -when enabled, viv fills unresponsive/sluggish.
@@ -6119,6 +6496,7 @@ debug_printf("FIND next\n");
 
 static void _viv_home(int end,int is_preload)
 {
+	if (!is_preload) _viv_ocr_clear_panel_on_image_change();
 	if (_viv_random)
 	{
 		_viv_send_random_everything_search();
@@ -6367,6 +6745,7 @@ static int _viv_is_msg(MSG *msg)
 					// cancel action
 					if ((key_flags == 0) && (msg->wParam == VK_ESCAPE))
 					{
+						if (_viv_ocr_mode) { _viv_ocr_toggle(); return 1; }
 						if (_viv_doing)
 						{
 							_viv_doing_cancel();
@@ -6442,6 +6821,7 @@ static void _viv_view_set(int view_x,int view_y,int invalidate)
 	GetClientRect(_viv_hwnd,&rect);
 	wide = rect.right - rect.left;
 	high = rect.bottom - rect.top - _viv_get_status_high() - _viv_get_controls_high();
+	if (ocr_panel_is_visible()) { wide -= OCR_PANEL_WIDTH; if (wide<0) wide=0; }
 
 	_viv_get_render_size(&rw,&rh);
 /*		
@@ -6864,6 +7244,10 @@ static void _viv_get_render_size(int *prw,int *prh)
 	GetClientRect(_viv_hwnd,&rect);
 	wide = rect.right - rect.left;
 	high = rect.bottom - rect.top - _viv_get_status_high() - _viv_get_controls_high();
+	if (ocr_panel_is_visible()) {
+		wide -= OCR_PANEL_WIDTH;
+		if (wide < 0) wide = 0;
+	}
 	
 	if (!((wide) && (high)))
 	{
@@ -7182,6 +7566,7 @@ static void _viv_check_menus(HMENU hmenu)
 	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_CUSTOM,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_CUSTOM ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
 
 	CheckMenuItem(hmenu,VIV_ID_ANIMATION_PLAY_PAUSE,_viv_animation_play ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hmenu,VIV_ID_OCR_TOGGLE,_viv_ocr_mode ? MF_CHECKED : MF_UNCHECKED);
 	
 	CheckMenuItem(hmenu,VIV_ID_NAV_SHUFFLE,config_shuffle ? MF_CHECKED : MF_UNCHECKED);
 	
@@ -7866,6 +8251,11 @@ static void _viv_doing_cancel(void)
 		{
 //			ShowCursor(TRUE);
 			_viv_view_set(_viv_doing_x,_viv_doing_y,1);
+			InvalidateRect(_viv_hwnd,0,FALSE);
+		}
+		if (was_doing == _VIV_DOING_OCR_SELECT)
+		{
+			_viv_ocr_selecting = 0;
 			InvalidateRect(_viv_hwnd,0,FALSE);
 		}
 		

@@ -295,4 +295,15 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"TIFF Image",
 	"TIFF Image",
 	"WebP Image",
+
+	// OCR
+	"&OCR",
+	"快速 OCR(&F)\tCtrl+Shift+O",
+	"OCR 结果",
+	"复制(&C)",
+	"清除(&L)",
+	"识别中...",
+	"无图像。",
+	"OCR 失败。",
+	"(无文本)",
 };

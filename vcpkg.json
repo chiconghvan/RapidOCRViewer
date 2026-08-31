@@ -1,0 +1,10 @@
+{
+  "name": "rapidocrviewer",
+  "version": "1.0.15",
+  "description": "RapidOCRViewer with Fast OCR (Tesseract 5 + Leptonica)",
+  "dependencies": [
+    "tesseract",
+    "leptonica"
+  ],
+  "builtin-baseline": "2024-07-12"
+}
