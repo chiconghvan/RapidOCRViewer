@@ -29,7 +29,7 @@ static void _config_write_string(HANDLE h,const char *ascii_key,const wchar_t *s
 static void _config_write_utf8(HANDLE h,const utf8_t *s);
 static void _config_save_settings_by_location(const wchar_t *path,int is_root);
 
-BYTE config_appdata = 0; // store settings in %APPDATA%\voidimageviewer or in the same location as voidimageviewer.exe
+BYTE config_appdata = 0; // store settings in %APPDATA%\rapidocrviewer or in the same location as rapidocrviewer.exe
 BYTE config_keep_centered = 1; // when zooming out, don't recenter the image. (keep cursor under the same pixel)
 int config_x = 0;
 int config_y = 0;
@@ -96,9 +96,9 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 	ini_t *ini;
 	wchar_t filename[STRING_SIZE];
 	
-	string_path_combine_utf8(filename,path,(const utf8_t *)"voidImageViewer.ini");
+	string_path_combine_utf8(filename,path,(const utf8_t *)"RapidOCRViewer.ini");
 	
-	ini = ini_open(filename,"voidImageViewer");
+	ini = ini_open(filename,"RapidOCRViewer");
 	if (ini)
 	{
 		config_x = ini_get_int(ini,(const utf8_t *)"x",config_x);
@@ -227,7 +227,7 @@ void config_load_settings(void)
 		
 	if (config_appdata)
 	{
-		if (string_get_appdata_voidimageviewer_path(path))
+		if (string_get_appdata_rapidocrviewer_path(path))
 		{
 			_config_load_settings_by_location(path,0);
 		}
@@ -269,7 +269,7 @@ static void _config_save_settings_by_location(const wchar_t *path,int is_root)
 	wchar_t tempname[STRING_SIZE];
 	wchar_t filename[STRING_SIZE];
 	
-	string_path_combine_utf8(filename,path,(const utf8_t *)"voidImageViewer.ini");
+	string_path_combine_utf8(filename,path,(const utf8_t *)"RapidOCRViewer.ini");
 
 	string_copy(tempname,filename);
 	string_cat_utf8(tempname,(const utf8_t *)".tmp");
@@ -277,7 +277,7 @@ static void _config_save_settings_by_location(const wchar_t *path,int is_root)
 	h = CreateFile(tempname,GENERIC_WRITE,FILE_SHARE_READ|FILE_SHARE_WRITE,0,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,0);
 	if (h != INVALID_HANDLE_VALUE)
 	{
-		_config_write_utf8(h,(const utf8_t *)"[voidImageViewer]\r\n");
+		_config_write_utf8(h,(const utf8_t *)"[RapidOCRViewer]\r\n");
 		
 		if ((is_root) && (config_appdata))
 		{
@@ -411,7 +411,7 @@ void config_save_settings(int appdata)
 		{
 			wchar_t appdata_wbuf[STRING_SIZE];
 			
-			string_path_combine_utf8(appdata_wbuf,path,(const utf8_t *)"voidImageViewer");
+			string_path_combine_utf8(appdata_wbuf,path,(const utf8_t *)"RapidOCRViewer");
 			
 			CreateDirectory(appdata_wbuf,NULL);
 

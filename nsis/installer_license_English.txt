@@ -1,5 +1,5 @@
 
-void Image Viewer
+RapidOCRViewer
 
 Copyright (C) 2025 David Carpenter
 

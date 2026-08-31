@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# Build NSIS installer for void Image Viewer
+# Build NSIS installer for RapidOCRViewer
 # Usage: .\build_installer.ps1 [arch] [vs_version] [build_config] [lang]
 #   arch: x86 or x64 (default: x86)
 #   vs_version: vs2005, vs2019, vs2026, etc. (default: auto-detect)
@@ -91,17 +91,17 @@ if ([string]::IsNullOrEmpty($VsVersion)) {
 
 # Determine executable path based on architecture
 if ($Arch -eq "x64") {
-    $ExePath = "..\$VsVersion\x64\$BuildConfig\voidImageViewer.exe"
+    $ExePath = "..\$VsVersion\x64\$BuildConfig\RapidOCRViewer.exe"
     $ConfigName = "Release|x64"
 }
 else {
-    $ExePath = "..\$VsVersion\$BuildConfig\voidImageViewer.exe"
+    $ExePath = "..\$VsVersion\$BuildConfig\RapidOCRViewer.exe"
     $ConfigName = "Release|Win32"
 }
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Building void Image Viewer Installer" -ForegroundColor Cyan
+Write-Host "Building RapidOCRViewer Installer" -ForegroundColor Cyan
 Write-Host "Architecture: $Arch" -ForegroundColor White
 Write-Host "Visual Studio: $VsVersion" -ForegroundColor White
 Write-Host "Build Config: $BuildConfig" -ForegroundColor White
@@ -109,15 +109,15 @@ Write-Host "Language: $Lang" -ForegroundColor White
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Check if voidImageViewer.exe exists
+# Check if RapidOCRViewer.exe exists
 Write-Host "Checking for compiled executable..." -ForegroundColor Cyan
 if (-not (Test-Path $ExePath)) {
     Write-Host ""
-    Write-Host "Error: voidImageViewer.exe not found!" -ForegroundColor Red
+    Write-Host "Error: RapidOCRViewer.exe not found!" -ForegroundColor Red
     Write-Host "Expected location: $ExePath" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Please build the application first:" -ForegroundColor Yellow
-    Write-Host "  1. Open $VsVersion\voidImageViewer.sln in Visual Studio" -ForegroundColor Yellow
+    Write-Host "  1. Open $VsVersion\RapidOCRViewer.sln in Visual Studio" -ForegroundColor Yellow
     Write-Host "  2. Select configuration: $ConfigName" -ForegroundColor Yellow
     Write-Host "  3. Build the solution (Build -> Build Solution)" -ForegroundColor Yellow
     Write-Host ""

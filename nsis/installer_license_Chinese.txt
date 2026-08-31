@@ -1,5 +1,5 @@
 
-void Image Viewer
+RapidOCRViewer
 
 版权所有 (C) 2025 David Carpenter
 

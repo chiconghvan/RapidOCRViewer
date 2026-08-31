@@ -1,8 +1,8 @@
 # Build output directories
 vs2026/x64/
-vs2026/voidImageViewer/x64/
-vs2026/voidImageViewer/Debug/
-vs2026/voidImageViewer/Release/
+vs2026/RapidOCRViewer/x64/
+vs2026/RapidOCRViewer/Debug/
+vs2026/RapidOCRViewer/Release/
 
 # Distribution artifacts
 dist/

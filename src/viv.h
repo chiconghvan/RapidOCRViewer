@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// VoidImageViewer
+// RapidOCRViewer
 
 #ifdef __cplusplus
 extern "C" {

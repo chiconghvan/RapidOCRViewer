@@ -839,13 +839,13 @@ wchar_t *string_get_word(wchar_t *p,wchar_t *buf)
 	return p;
 }
 
-int string_get_appdata_voidimageviewer_path(wchar_t *wbuf)
+int string_get_appdata_rapidocrviewer_path(wchar_t *wbuf)
 {
 	wchar_t appdata_wbuf[STRING_SIZE];
 	
 	if (string_get_appdata_path(appdata_wbuf))
 	{
-		string_path_combine_utf8(wbuf,appdata_wbuf,(const utf8_t *)"voidImageViewer");
+		string_path_combine_utf8(wbuf,appdata_wbuf,(const utf8_t *)"RapidOCRViewer");
 
 		return 1;
 	}

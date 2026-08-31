@@ -80,12 +80,12 @@ XPStyle on
 !ifdef x64
 	
 	!define TARGETMACHINE "x64"
-	InstallDir "$PROGRAMFILES64\voidImageViewer"
+	InstallDir "$PROGRAMFILES64\RapidOCRViewer"
 	
 !else
 	
 	!define TARGETMACHINE "x86"
-	InstallDir "$PROGRAMFILES\voidImageViewer"
+	InstallDir "$PROGRAMFILES\RapidOCRViewer"
 	
 !endif
 	
@@ -95,17 +95,17 @@ Var existing_ini_filename
 Var admin_install_options
 Var user_install_options
 
-BrandingText "void Image Viewer ${VERSION}${BETAVERSION} (${TARGETMACHINE}) Setup"
+BrandingText "RapidOCRViewer ${VERSION}${BETAVERSION} (${TARGETMACHINE}) Setup"
 
 ; settings /SOLID will save a few KBs
 SetCompressor /SOLID lzma
-Name "void Image Viewer"
+Name "RapidOCRViewer"
 
 ; Output file name with language code
-OutFile "voidImageViewer-${VERSION}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}-Setup.exe"
+OutFile "RapidOCRViewer-${VERSION}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}-Setup.exe"
 	
 ; MUI settings
-!define MUI_ICON "..\res\voidImageViewer.ico"
+!define MUI_ICON "..\res\RapidOCRViewer.ico"
 
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
 
@@ -137,12 +137,12 @@ Page custom InstallOptions2
 VIProductVersion "${VERSION}${BETAVERSION}"
 
 ; don't localize these:
-VIAddVersionKey "ProductName" "void Image Viewer"
+VIAddVersionKey "ProductName" "RapidOCRViewer"
 VIAddVersionKey "Comments" ""
 VIAddVersionKey "CompanyName" ""
 VIAddVersionKey "LegalTrademarks" ""
 VIAddVersionKey "LegalCopyright" "Copyright (c) 2025 David Carpenter"
-VIAddVersionKey "FileDescription" "void Image Viewer Setup"
+VIAddVersionKey "FileDescription" "RapidOCRViewer Setup"
 
 VIAddVersionKey "FileVersion" "${VERSION}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}"
 VIAddVersionKey "ProductVersion" "${VERSION}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}"
@@ -166,7 +166,7 @@ Function .onInit
 	SetRegView 64
 !endif
 
-	ReadRegStr $R2 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\voidImageViewer" 'UninstallString'
+	ReadRegStr $R2 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RapidOCRViewer" 'UninstallString'
 
 !ifdef x64
 	SetRegView 32
@@ -183,13 +183,13 @@ Function .onInit
 no_existing_install_dir:
 
 	; get the existing ini filename.
-	StrCpy $existing_ini_filename "$APPDATA\voidImageViewer\voidImageViewer.ini"
+	StrCpy $existing_ini_filename "$APPDATA\RapidOCRViewer\RapidOCRViewer.ini"
 	
 	; Check if appdata is set to zero
 	; $INSTDIR is the existing install location (or the default one if it does not exist)
-	ReadINIStr $0 "$INSTDIR\voidImageViewer.ini" "voidImageViewer" "appdata"
+	ReadINIStr $0 "$INSTDIR\RapidOCRViewer.ini" "RapidOCRViewer" "appdata"
     StrCmp $0 "0" 0 skip_check_app_data
-	StrCpy $existing_ini_filename "$INSTDIR\voidImageViewer.ini"
+	StrCpy $existing_ini_filename "$INSTDIR\RapidOCRViewer.ini"
 	!insertmacro MUI_INSTALLOPTIONS_WRITE "${INSTALL_OPTIONS_FILE}" "Field 2" "State" "0"
 	!insertmacro MUI_INSTALLOPTIONS_WRITE "${INSTALL_OPTIONS_FILE}" "Field 3" "State" "1"
 
@@ -221,20 +221,20 @@ FunctionEnd
 Function un.onInit
 
 	; get the existing ini filename.
-	StrCpy $existing_ini_filename "$APPDATA\voidImageViewer\voidImageViewer.ini"
+	StrCpy $existing_ini_filename "$APPDATA\RapidOCRViewer\RapidOCRViewer.ini"
 	
 	; Check if appdata is set to zero
 	; $INSTDIR is the existing install location
-	ReadINIStr $0 "$INSTDIR\voidImageViewer.ini" "voidImageViewer" "appdata"
+	ReadINIStr $0 "$INSTDIR\RapidOCRViewer.ini" "RapidOCRViewer" "appdata"
     StrCmp $0 "0" 0 skip_check_app_data
-	StrCpy $existing_ini_filename "$INSTDIR\voidImageViewer.ini"
+	StrCpy $existing_ini_filename "$INSTDIR\RapidOCRViewer.ini"
 
 skip_check_app_data:
 
 FunctionEnd
 
 ; sections
-Section "voidImageViewer" SECTION_VOIDIMAGEVIEWER
+Section "RapidOCRViewer" SECTION_RAPIDOCRVIEWER
 
 	; init
 	StrCpy $admin_install_options ""
@@ -248,7 +248,7 @@ Section "voidImageViewer" SECTION_VOIDIMAGEVIEWER
 
 no_app_data:
 
-	; this option is special, we MUST unset any option that voidImageViewer was previously installed with.
+	; this option is special, we MUST unset any option that RapidOCRViewer was previously installed with.
 	StrCpy $admin_install_options "$admin_install_options /noappdata"
 	
 skip_app_data:	
@@ -374,38 +374,38 @@ no_webp_association:
 skip_webp_association:
 
 	; ----------------------------------
-	; begin voidImageViewer installation
+	; begin RapidOCRViewer installation
 	; ----------------------------------
 	
 	SectionIn RO
 
 	InitPluginsDir
-	SetOutPath "$pluginsdir\voidImageViewer"
+	SetOutPath "$pluginsdir\RapidOCRViewer"
 
 	; write out files to copy.
 	; VS version and build config are configurable via defines
 
 	!ifdef x64
 	
-		File "..\${VS_VERSION}\x64\${BUILD_CONFIG}\voidImageViewer.exe"
+		File "..\${VS_VERSION}\x64\${BUILD_CONFIG}\RapidOCRViewer.exe"
 		
 	!else
 	
-		File "..\${VS_VERSION}\${BUILD_CONFIG}\voidImageViewer.exe"
+		File "..\${VS_VERSION}\${BUILD_CONFIG}\RapidOCRViewer.exe"
 		
 	!endif
 
 	; OCR tessdata (Vietnamese)
-	SetOutPath "$pluginsdir\voidImageViewer\tessdata"
+	SetOutPath "$pluginsdir\RapidOCRViewer\tessdata"
 	File /nonfatal "..\tessdata\vie.traineddata"
 
 	; OCR runtime DLLs (Tesseract 5 + dependencies)
-	SetOutPath "$pluginsdir\voidImageViewer"
+	SetOutPath "$pluginsdir\RapidOCRViewer"
 	File /nonfatal "..\redist\*.dll"
 
 	; File "..\Changes.txt"
-	SetOutPath "$pluginsdir\voidImageViewer"
-	WriteUninstaller "$pluginsdir\voidImageViewer\Uninstall.exe"
+	SetOutPath "$pluginsdir\RapidOCRViewer"
+	WriteUninstaller "$pluginsdir\RapidOCRViewer\Uninstall.exe"
 
 	; check for command line options that will override the default install options.
 	${GetOptions} $CMDLINE "/install-options" $0
@@ -415,7 +415,7 @@ skip_webp_association:
 	; install with admin rights.
 	; MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION "ADMIN $admin_install_options"
 	ClearErrors
-	ExecWait '"$pluginsdir\voidImageViewer\voidImageViewer.exe" /install "$INSTDIR" /install-options "$admin_install_options"' $0
+	ExecWait '"$pluginsdir\RapidOCRViewer\RapidOCRViewer.exe" /install "$INSTDIR" /install-options "$admin_install_options"' $0
 	IfErrors exec_admin_error
 	IntCmp $0 0 exec_admin_ok
 	
@@ -426,7 +426,7 @@ exec_admin_error:
 exec_admin_ok:
 
 	ClearErrors
-	ExecWait '"$INSTDIR\voidImageViewer.exe" $user_install_options' $0
+	ExecWait '"$INSTDIR\RapidOCRViewer.exe" $user_install_options' $0
 	IfErrors exec_install_options_error
 	IntCmp $0 0 exec_install_options_ok
 
@@ -443,18 +443,18 @@ Section "Uninstall"
 	; Make sure $InstDir is not the current directory so we can remove it
 	SetOutPath $Temp
 	    
-	; copy voidImageViewer.exe to temp folder.	
-	CopyFiles /SILENT $INSTDIR\voidImageViewer.exe $Temp\voidImageViewer.exe
+	; copy RapidOCRViewer.exe to temp folder.	
+	CopyFiles /SILENT $INSTDIR\RapidOCRViewer.exe $Temp\RapidOCRViewer.exe
 
 	; run uninstaller with admin rights
 	; this will uninstall any localized shortcuts etc..
 	; this also removes the service if installed
 	; which is something we can not do easily from the nsis installer.
 	; do this before we try to terminate the app.
-    ExecWait '"$Temp\voidImageViewer.exe" /uninstall "$INSTDIR"'
+    ExecWait '"$Temp\RapidOCRViewer.exe" /uninstall "$INSTDIR"'
 
-	; delete temp voidImageViewer
-    Delete "$Temp\voidImageViewer.exe"
+	; delete temp RapidOCRViewer
+    Delete "$Temp\RapidOCRViewer.exe"
 
 SectionEnd
 

@@ -1,4 +1,4 @@
-# void Image Viewer
+# RapidOCRViewer
 A lightweight image viewer for Windows with animated GIF/WEBP support.  
 Opens and displays BMP, GIF, ICO, PNG, JPG, TIF and WEBP images as fast as possible.  
 Animate GIF/WEBP files as accurately as possible.  
@@ -11,36 +11,36 @@ Animate GIF/WEBP files as accurately as possible.
 
 Download
 --------
-https://github.com/voidtools/voidImageViewer/releases
+https://github.com/voidtools/RapidOCRViewer/releases
 
 https://www.voidtools.com/forum/viewtopic.php?t=5623
 <br/><br/><br/>
 
 
-void Image Viewer main window:
+RapidOCRViewer main window:
 
-![Void Image Viewer Image View](https://www.voidtools.com/voidImageViewer.Image.View10.gif)
+![RapidOCRViewer Image View](https://www.voidtools.com/RapidOCRViewer.Image.View10.gif)
 <br/><br/><br/>
 
 
 
-void Image Viewer General Options:
+RapidOCRViewer General Options:
 
-![Void Image Viewer Options General](https://www.voidtools.com/voidImageViewer.Options.General10.png)
+![RapidOCRViewer Options General](https://www.voidtools.com/RapidOCRViewer.Options.General10.png)
 <br/><br/><br/>
 
 
 
-void Image Viewer View Options:
+RapidOCRViewer View Options:
 
-![Void Image Viewer Options View](https://www.voidtools.com/voidImageViewer.Options.View10.png)
+![RapidOCRViewer Options View](https://www.voidtools.com/RapidOCRViewer.Options.View10.png)
 <br/><br/><br/>
 
 
 
-void Image Viewer Controls Options:
+RapidOCRViewer Controls Options:
 
-![Void Image Viewer Image Controls](https://www.voidtools.com/voidImageViewer.Options.Controls10.png)
+![RapidOCRViewer Image Controls](https://www.voidtools.com/RapidOCRViewer.Options.Controls10.png)
 <br/><br/><br/>
 
 

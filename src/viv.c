@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// VoidImageViewer
+// RapidOCRViewer
 
 // TODO:
 // right click rename 
@@ -82,7 +82,7 @@
 // Check we are using ICC
 // show main window on monitor that the cursor is currently on, like MPC-HC.
 // remove GetFileAttributesEx or replace with GetFileAttributes..
-// Ctrl + V to paste image from the clipboard into voidImageViewer??
+// Ctrl + V to paste image from the clipboard into RapidOCRViewer??
 // a touch window from inside option
 // add support for APNG
 // A Play All Instances option that plays/pause all instances
@@ -94,7 +94,7 @@
 // graphics::GetHalftonePalette for 256 color mode.
 // high dpi icons
 // control toolbar customization
-// install bmp/jpg only if the default value for HKEY_CLASSES_ROOT\.bmp is bmpfile or voidImageViewer.bmpfile -don't replace non default ones. default hard to determine for each version of Windows -avoiding for now.
+// install bmp/jpg only if the default value for HKEY_CLASSES_ROOT\.bmp is bmpfile or RapidOCRViewer.bmpfile -don't replace non default ones. default hard to determine for each version of Windows -avoiding for now.
 // string table for localization.
 // right click -> open with ...open with, or rather get a proper context menu. CDefFolderMenu_Create2
 // keep window aspect size option
@@ -103,7 +103,7 @@
 // shift + Ctrl + Numpad arrow keys for faster/slower movement
 // when panning the image, clamp to the image edge, instead of the image center.
 // paste dib from clipboard CF_DIB
-// therube: Just to note...  Something like: voidImageViewer.exe "\my documents" or voidImageViewer.exe "\my documents\"  , will load "images" found in the \my documents\ directory.  Though somethig like: voidImageViewer.exe "\my documents\*" or voidImageViewer.exe "\my documents\*.*"  will load (I suppose it is) ALL images on your computer. voidImageViewer.exe "\my documents\*.jpg" works as expected. 
+// therube: Just to note...  Something like: RapidOCRViewer.exe "\my documents" or RapidOCRViewer.exe "\my documents\"  , will load "images" found in the \my documents\ directory.  Though somethig like: RapidOCRViewer.exe "\my documents\*" or RapidOCRViewer.exe "\my documents\*.*"  will load (I suppose it is) ALL images on your computer. RapidOCRViewer.exe "\my documents\*.jpg" works as expected. 
 // maintain correct image aspect ratio when window is clipped on auto size.
 //
 // DONE:
@@ -142,7 +142,7 @@
 // *Open Location of file (Show in Explorer).
 // *Clear ΓÇô This command needs a Hotkey (Maybe Crtl+W like in Word), and Dialog Box to approve. -added as close ctrl + W
 // *Write the Dimensions (weight height) of each pic and the speed of animation.
-// *Voidimageviewer has a nice feature of controlling the animation rate (speed), to make it fast/slower.
+// *RapidOCRViewer has a nice feature of controlling the animation rate (speed), to make it fast/slower.
 // *open clipboard to view image in clipboard? -no must be file based for now
 // *Mousewheel up/down ΓÇô Most of image viewers use these keys for one of two actions: 1. Next image / Previous image 2. Zoom in / Zoom out -keyboard shortcut to toggle between the two.
 // *print -using preview to print ..
@@ -228,7 +228,7 @@
 // *correct tracking of center pixel when zooming/resizing.
 // *when going full screen, check if the image is currently smaller than it would be full screen, if it is, set a flag to restore the zoom, save the zoom and set the zoom to 0.
 // *D:\Misc\Game Data\Aladdin\Aladdin-RugRide.png doesn't render correctly on some zooms 85129x224 -converted int to __int64
-// *check the viv icon is being used for webp. -it does, but you have to open a webp file first and allow voidimageviewer to open.
+// *check the viv icon is being used for webp. -it does, but you have to open a webp file first and allow rapidocrviewer to open.
 // *prevent screen saver on slideshow
 // 1.0.0.15
 // *fixed _viv_dst_pos_x/_viv_dst_pos_y (doubled offsets to match mpchc)
@@ -4867,7 +4867,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 		bufstart = buf;
 		
 		// treat switches with a '.' as a filename.
-		// eg: voidimageviewer.exe -my-image.png
+		// eg: rapidocrviewer.exe -my-image.png
 		if ((!was_quote) && ((*bufstart == '/') || (*bufstart == '-')) && (!string_is_dot(buf)))
 		{
 			bufstart++;
@@ -4898,7 +4898,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 				// no uninstall path?
 				if (!uninstall_path[0])	
 				{
-					// caller will need to manually delete voidimageviewer.exe
+					// caller will need to manually delete rapidocrviewer.exe
 					string_get_exe_path(uninstall_path);
 				}
 
@@ -5053,7 +5053,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 		
 		os_make_sure_path_exists(install_path);
 		
-		_viv_install_copy_file(install_path,temp_path,(const utf8_t *)"voidImageViewer.exe",1);
+		_viv_install_copy_file(install_path,temp_path,(const utf8_t *)"RapidOCRViewer.exe",1);
 		_viv_install_copy_file(install_path,temp_path,(const utf8_t *)"Uninstall.exe",0);
 		_viv_install_copy_file(install_path,temp_path,(const utf8_t *)"Changes.txt",0);
 		// OCR tessdata
@@ -5099,7 +5099,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 		{
 			wchar_t new_exe_filename_wbuf[STRING_SIZE];
 			
-			string_path_combine_utf8(new_exe_filename_wbuf,install_path,(const utf8_t *)"voidImageViewer.exe");
+			string_path_combine_utf8(new_exe_filename_wbuf,install_path,(const utf8_t *)"RapidOCRViewer.exe");
 			
 			os_shell_execute(0,new_exe_filename_wbuf,1,NULL,install_options);
 		}
@@ -5112,17 +5112,17 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 		// make sure no other process is running.
 		_viv_close_existing_process();
 		
-		// remove %APPDATA%\voidimageviewer
-		if (string_get_appdata_voidimageviewer_path(path))
+		// remove %APPDATA%\rapidocrviewer
+		if (string_get_appdata_rapidocrviewer_path(path))
 		{
-			_viv_uninstall_delete_file(path,(const utf8_t *)"voidImageViewer.ini");
+			_viv_uninstall_delete_file(path,(const utf8_t *)"RapidOCRViewer.ini");
 
 			RemoveDirectory(path);
 		}
 					
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"Uninstall.exe");
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"Changes.txt");
-		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"voidImageViewer.ini");
+		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"RapidOCRViewer.ini");
 		// OCR runtime DLLs
 		{
 			static const utf8_t *ocr_dlls[] = {
@@ -5157,7 +5157,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 			string_path_combine_utf8(tess_dir, uninstall_path, (const utf8_t *)"tessdata");
 			RemoveDirectoryW(tess_dir);
 		}
-		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"voidImageViewer.exe");
+		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"RapidOCRViewer.exe");
 		
 		RemoveDirectory(uninstall_path);
 	}
@@ -5709,13 +5709,13 @@ static int _viv_init(int nCmdShow)
 	{
 		SetLastError(0);
 
-		_viv_mutex = CreateMutexA(NULL,0,"VOIDIMAGEVIEWER");
+		_viv_mutex = CreateMutexA(NULL,0,"RAPIDOCRVIEWER");
 		
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
 			HWND hwnd;
 
-			hwnd = FindWindowA("VOIDIMAGEVIEWER",0);
+			hwnd = FindWindowA("RAPIDOCRVIEWER",0);
 			
 			if (hwnd)
 			{
@@ -5775,7 +5775,7 @@ static int _viv_init(int nCmdShow)
 		(HICON)LoadImage(os_hinstance,MAKEINTRESOURCE(IDI_ICON1),IMAGE_ICON,GetSystemMetrics(SM_CXICON),GetSystemMetrics(SM_CXICON),0),
 		LoadCursor(NULL,IDC_ARROW),
 		(HBRUSH)(COLOR_BTNFACE+1),
-		"VOIDIMAGEVIEWER",
+		"RAPIDOCRVIEWER",
 		(HICON)LoadImage(os_hinstance,MAKEINTRESOURCE(IDI_ICON1),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0));
 	
 	_viv_hmenu = _viv_create_menu();
@@ -5819,7 +5819,7 @@ static int _viv_init(int nCmdShow)
 
 	_viv_hwnd = os_CreateWindowEx(
 		0,
-		"VOIDIMAGEVIEWER",
+		"RAPIDOCRVIEWER",
 		localization_get_string(LOCALIZATION_ID_APP_NAME),
 		window_style,
 		rect.left,rect.top,rect.right - rect.left,rect.bottom - rect.top,
@@ -9290,10 +9290,10 @@ static void _viv_install_association_by_extension(const char *association,const 
 	// make sure we uninstall old associations first.
 	_viv_uninstall_association_by_extension(association);
 
-	string_copy_utf8_string(class_name,"voidImageViewer");
+	string_copy_utf8_string(class_name,"RapidOCRViewer");
 	string_cat(class_name,dot_association);
 
-	string_copy_utf8_string(default_icon,"SOFTWARE\\Classes\\voidImageViewer");
+	string_copy_utf8_string(default_icon,"SOFTWARE\\Classes\\RapidOCRViewer");
 	string_cat(default_icon,dot_association);
 	string_cat_utf8(default_icon,"\\DefaultIcon");
 
@@ -9366,14 +9366,14 @@ static void _viv_install_association_by_extension(const char *association,const 
 	{
 		wchar_t wbuf[STRING_SIZE];
 		
-		if (!_viv_get_registry_string(hkey,(const utf8_t *)"voidImageViewer.Backup",wbuf,STRING_SIZE))
+		if (!_viv_get_registry_string(hkey,(const utf8_t *)"RapidOCRViewer.Backup",wbuf,STRING_SIZE))
 		{
 			if (!_viv_get_registry_string(hkey,0,wbuf,STRING_SIZE))
 			{
 				*wbuf = 0;
 			}
 			
-			_viv_set_registry_string(hkey,(const utf8_t *)"voidImageViewer.Backup",wbuf);
+			_viv_set_registry_string(hkey,(const utf8_t *)"RapidOCRViewer.Backup",wbuf);
 		}
 
 		_viv_set_registry_string(hkey,0,class_name);
@@ -9401,16 +9401,16 @@ static void _viv_uninstall_association_by_extension(const char *association)
 	{
 		wchar_t wbuf[STRING_SIZE];
 		
-		if (_viv_get_registry_string(hkey,(const utf8_t *)"voidImageViewer.Backup",wbuf,STRING_SIZE))
+		if (_viv_get_registry_string(hkey,(const utf8_t *)"RapidOCRViewer.Backup",wbuf,STRING_SIZE))
 		{
 			_viv_set_registry_string(hkey,0,wbuf);
 
-			// debug_printf("Delete voidImageViewer.Backup\n");
+			// debug_printf("Delete RapidOCRViewer.Backup\n");
 
-			reg_ret = RegDeleteValueA(hkey,"voidImageViewer.Backup");
+			reg_ret = RegDeleteValueA(hkey,"RapidOCRViewer.Backup");
 			if (reg_ret == ERROR_SUCCESS)
 			{
-				// debug_printf("Delete voidImageViewer.Backup OK\n");
+				// debug_printf("Delete RapidOCRViewer.Backup OK\n");
 			}
 			else
 			{
@@ -9421,7 +9421,7 @@ static void _viv_uninstall_association_by_extension(const char *association)
 		RegCloseKey(hkey);
 	}
 	
-	string_copy_utf8_string(key,(const utf8_t *)"SOFTWARE\\Classes\\voidImageViewer.");
+	string_copy_utf8_string(key,(const utf8_t *)"SOFTWARE\\Classes\\RapidOCRViewer.");
 	string_cat_utf8(key,association);
 	
 	RegDeleteKey(HKEY_CURRENT_USER,key);
@@ -9434,7 +9434,7 @@ static int _viv_is_association(const char *association)
 	wchar_t class_name[STRING_SIZE];
 	wchar_t key[STRING_SIZE];
 	
-	string_copy_utf8_string(class_name,(const utf8_t *)"voidImageViewer.");
+	string_copy_utf8_string(class_name,(const utf8_t *)"RapidOCRViewer.");
 	string_cat_utf8(class_name,association);
 	
 	ret = 0;
@@ -10224,7 +10224,7 @@ static INT_PTR CALLBACK _viv_about_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			string_copy_utf8_string(version_wbuf,localization_get_string(LOCALIZATION_ID_ABOUT_CAPTION));
 			SetWindowText(hwnd,version_wbuf);
 			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTTITLE,LOCALIZATION_ID_APP_NAME);
-			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTVOIDIMAGEVIEWER,LOCALIZATION_ID_APP_NAME);
+			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTRAPIDOCRVIEWER,LOCALIZATION_ID_APP_NAME);
 			string_printf(version_wbuf,"%d.%d.%d.%d%s %s",VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,VERSION_BUILD,VERSION_TYPE,VERSION_TARGET_MACHINE);
 			SetDlgItemText(hwnd,IDC_ABOUTVERSION,version_wbuf);
 			string_printf(version_wbuf,localization_get_string(LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT),VERSION_YEAR);
@@ -12302,7 +12302,7 @@ static void _viv_command_line_options(void)
 	wchar_t *text_wbuf;
 	wchar_t caption_wbuf[STRING_SIZE];
 
-	text_wbuf = string_alloc_utf8("Usage:\nvoidImageViewer.exe [/switches] [filename(s)]\n"
+	text_wbuf = string_alloc_utf8("Usage:\nRapidOCRViewer.exe [/switches] [filename(s)]\n"
 		"\n"
 		"Switches:\n"
 		"/slideshow\tStart a slideshow.\n"
@@ -13109,14 +13109,14 @@ static void _viv_edit_key_remove_currently_used_by(_viv_key_list_t *keylist,DWOR
 }
 
 //FIXME: we should timeout 
-//FIXME: we should check for the process name voidImageViewer.exe rather than the window class name. -be careful when uninstalling as the non-admin process will be waiting for the admin process to exit.
+//FIXME: we should check for the process name RapidOCRViewer.exe rather than the window class name. -be careful when uninstalling as the non-admin process will be waiting for the admin process to exit.
 static void _viv_close_existing_process(void)
 {
 	for(;;)
 	{
 		HWND hwnd;
 		
-		hwnd = FindWindowA("VOIDIMAGEVIEWER",0);
+		hwnd = FindWindowA("RAPIDOCRVIEWER",0);
 		if (hwnd)
 		{
 			DWORD process_id;
@@ -13164,7 +13164,7 @@ static int _viv_is_start_menu_shortcuts(void)
 	// delete shortcuts
 	if (os_get_special_folder_path(special_folder_path_wbuf,CSIDL_COMMON_PROGRAMS))
 	{
-		string_path_combine_utf8(path_wbuf,special_folder_path_wbuf,(const utf8_t *)"void Image Viewer");
+		string_path_combine_utf8(path_wbuf,special_folder_path_wbuf,(const utf8_t *)"RapidOCRViewer");
 
 		// make sure this directory exists!		
 		if (GetFileAttributesW(path_wbuf) != INVALID_FILE_ATTRIBUTES)
@@ -13194,14 +13194,14 @@ static void _viv_install_start_menu_shortcuts(void)
 		wchar_t uninstall_filename_wbuf[STRING_SIZE];
 		wchar_t lnk_wbuf[STRING_SIZE];
 		
-		string_path_combine_utf8(path_wbuf,special_folder_path_wbuf,(const utf8_t *)"void Image Viewer");
+		string_path_combine_utf8(path_wbuf,special_folder_path_wbuf,(const utf8_t *)"RapidOCRViewer");
 
 		// make sure this directory exists!		
 		os_make_sure_path_exists(path_wbuf);
 
-		// void image viewer.lnk
+		// RapidOCRViewer.lnk
 		_viv_get_exe_filename(exe_filename_wbuf);
-		string_path_combine_utf8(lnk_wbuf,path_wbuf,"void Image Viewer.lnk");
+		string_path_combine_utf8(lnk_wbuf,path_wbuf,"RapidOCRViewer.lnk");
 		os_create_shell_link(exe_filename_wbuf,lnk_wbuf);
 	
 		// uninstall
@@ -13224,10 +13224,10 @@ static void _viv_uninstall_start_menu_shortcuts(void)
 	{
 		wchar_t lnk_wbuf[STRING_SIZE];
 
-		string_path_combine_utf8(path_wbuf,special_folder_path_wbuf,(const utf8_t *)"void Image Viewer");
+		string_path_combine_utf8(path_wbuf,special_folder_path_wbuf,(const utf8_t *)"RapidOCRViewer");
 		
 		// localized.
-		string_path_combine_utf8(lnk_wbuf,path_wbuf,"void Image Viewer.lnk");
+		string_path_combine_utf8(lnk_wbuf,path_wbuf,"RapidOCRViewer.lnk");
 		DeleteFile(lnk_wbuf);
 		
 		string_path_combine_utf8(lnk_wbuf,path_wbuf,"Uninstall.lnk");
@@ -14677,7 +14677,7 @@ static HBITMAP _viv_get_mipmap(HBITMAP hbitmap,int image_wide,int image_high,int
 						
 						last_stretch_mode = SetStretchBltMode(mem_hdc,HALFTONE);
 						
-						// for crazy large images -https://github.com/voidtools/voidImageViewer/issues/45
+						// for crazy large images -https://github.com/voidtools/RapidOCRViewer/issues/45
 						// use stitching, since we are using HALFTONE here, we will end up with sharp tile edges
 						// but's its better than showing a black image.
 						if (_viv_StretchBltStitch(mem_hdc,0,0,mip_wide,mip_high,mem2_hdc,0,0,best_wide,best_high,SRCCOPY,0,0,mip_wide,mip_high))

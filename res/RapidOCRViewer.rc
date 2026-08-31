@@ -31,7 +31,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    CONTROL         "&Store settings in %APPDATA%\\voidImageViewer",IDC_APPDATA,
+    CONTROL         "&Store settings in %APPDATA%\\RapidOCRViewer",IDC_APPDATA,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,0,186,10
     CONTROL         "Allow multiple &instances",IDC_MULTIPLE_INSTANCES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,18,186,10
@@ -53,7 +53,7 @@ END
 IDD_OPTIONS DIALOGEX 0, 0, 310, 271
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Options - Void Image Viewer"
+CAPTION "Options - RapidOCRViewer"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,198,252,50,14,WS_GROUP
@@ -122,14 +122,14 @@ END
 
 IDD_ABOUT DIALOGEX 0, 0, 228, 189
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
-CAPTION "About void Image Viewer"
+CAPTION "About RapidOCRViewer"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,120,168,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,174,168,50,14
     LTEXT           "",IDC_ABOUTBACK,0,0,228,54
     EDITTEXT        IDC_ABOUTTITLE,30,18,192,30,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    EDITTEXT        IDC_ABOUTVOIDIMAGEVIEWER,30,66,192,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_ABOUTRAPIDOCRVIEWER,30,66,192,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     EDITTEXT        IDC_ABOUTVERSION,30,84,192,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     EDITTEXT        IDC_ABOUTCOPYRIGHT,30,102,192,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     EDITTEXT        IDC_ABOUTEMAIL,30,120,192,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
@@ -191,7 +191,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "voidImageViewer.ico"
+IDI_ICON1               ICON                    "RapidOCRViewer.ico"
 IDI_PREV                ICON                    "prev.ico"
 IDI_PLAY                ICON                    "play.ico"
 IDI_NEXT                ICON                    "next.ico"
@@ -221,12 +221,12 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "voidImageViewer"
+            VALUE "FileDescription", "RapidOCRViewer"
             VALUE "FileVersion", "1.0.0.15"
-            VALUE "InternalName", "voidImageViewer"
-            VALUE "LegalCopyright", "Copyright © 2026 voidtools"
-            VALUE "OriginalFilename", "voidImageViewer.exe"
-            VALUE "ProductName", "voidImageViewer"
+            VALUE "InternalName", "RapidOCRViewer"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2026 voidtools"
+            VALUE "OriginalFilename", "RapidOCRViewer.exe"
+            VALUE "ProductName", "RapidOCRViewer"
             VALUE "ProductVersion", "1.0.0.15"
         END
     END

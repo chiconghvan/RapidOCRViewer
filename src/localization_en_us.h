@@ -28,7 +28,7 @@ static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] =
 	"English (US)", // LOCALIZATION_ID_LANGUAGE
 	
 	// Application name
-	"void Image Viewer", // LOCALIZATION_ID_APP_NAME
+	"RapidOCRViewer", // LOCALIZATION_ID_APP_NAME
 
 	// File menu
 	"&File", // LOCALIZATION_ID_FILE,
@@ -180,7 +180,7 @@ static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] =
 	"Home &Page", // LOCALIZATION_ID_HOME_PAGE,
 	"&Donate", // LOCALIZATION_ID_DONATE,
 	"&About", // LOCALIZATION_ID_ABOUT,
-	"https://www.voidtools.com/support/voidimageviewer/", // LOCALIZATION_ID_HELP_SUPPORT_URL,
+	"https://www.voidtools.com/support/rapidocrviewer/", // LOCALIZATION_ID_HELP_SUPPORT_URL,
 	"https://www.voidtools.com/donate/", // LOCALIZATION_ID_HELP_DONATE_URL,
 	"https://www.voidtools.com/", // LOCALIZATION_ID_HELP_WEBSITE_URL,
 
@@ -206,13 +206,13 @@ static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] =
 	"milliseconds", // LOCALIZATION_ID_STATUS_BAR_MILLISECONDS,
 
 	// Dialog strings
-	"Options - void Image Viewer", // LOCALIZATION_ID_OPTIONS_CAPTION,
+	"Options - RapidOCRViewer", // LOCALIZATION_ID_OPTIONS_CAPTION,
 	"General", // LOCALIZATION_ID_OPTIONS_GENERAL_DIALOG,
 	"View", // LOCALIZATION_ID_OPTIONS_VIEW_DIALOG,
 	"Controls", // LOCALIZATION_ID_OPTIONS_CONTROLS_DIALOG,
 	"OK", // LOCALIZATION_ID_OK_BUTTON,
 	"Cancel", // LOCALIZATION_ID_CANCEL_BUTTON,
-	"&Store settings in %APPDATA%\\voidImageViewer", // LOCALIZATION_ID_STORE_SETTINGS_APPDATA,
+	"&Store settings in %APPDATA%\\RapidOCRViewer", // LOCALIZATION_ID_STORE_SETTINGS_APPDATA,
 	"Allow multiple &instances", // LOCALIZATION_ID_ALLOW_MULTIPLE_INSTANCES,
 	"Start &menu shortcuts", // LOCALIZATION_ID_STARTMENU_SHORTCUTS,
 	"Associations", // LOCALIZATION_ID_ASSOCIATIONS,
@@ -250,7 +250,7 @@ static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] =
 	"minutes", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
 	"seconds", // LOCALIZATION_ID_CUSTOM_RATE_SECONDS,
 	"milliseconds", // LOCALIZATION_ID_CUSTOM_RATE_MILLISECONDS,
-	"About void Image Viewer", // LOCALIZATION_ID_ABOUT_CAPTION,
+	"About RapidOCRViewer", // LOCALIZATION_ID_ABOUT_CAPTION,
 	"Rename", // LOCALIZATION_ID_RENAME_CAPTION,
 	"Jump To", // LOCALIZATION_ID_JUMP_TO_TITLE,
 	"Search Everything", // LOCALIZATION_ID_SEARCH_EVERYTHING,

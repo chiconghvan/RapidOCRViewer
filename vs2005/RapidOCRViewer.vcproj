@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="voidImageViewer"
+	Name="RapidOCRViewer"
 	ProjectGUID="{80928F09-680A-45E8-B911-C54A3B865490}"
-	RootNamespace="voidImageViewer"
+	RootNamespace="RapidOCRViewer"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -82,7 +82,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib shlwapi.lib UnicoWS.lib"
-				OutputFile="$(OutDir)\voidImageViewer.exe"
+				OutputFile="$(OutDir)\RapidOCRViewer.exe"
 				LinkIncremental="0"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
@@ -99,7 +99,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -177,11 +177,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ComCtl32.lib shlwapi.lib"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="C:\Program Files (x86)\Microsoft Visual Studio 8\VC\PlatformSDK\Lib\AMD64"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/voidImageViewer.pdb"
+				ProgramDatabaseFile="$(OutDir)/RapidOCRViewer.pdb"
 				SubSystem="1"
 				TargetMachine="17"
 			/>
@@ -190,7 +190,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -268,7 +268,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="lib\minicrt.lib ComCtl32.lib ws2_32.lib shlwapi.lib Imm32.lib UnicoWS.lib Urlmon.lib"
-				OutputFile="$(OutDir)\voidImageViewer.exe"
+				OutputFile="$(OutDir)\RapidOCRViewer.exe"
 				LinkIncremental="0"
 				IgnoreAllDefaultLibraries="true"
 				IgnoreDefaultLibraryNames=""
@@ -317,7 +317,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="c:\dev\rescpver\Debug\rescpver.exe c:\dev\voidimageviewer\src\version.h c:\dev\voidimageviewer\res\voidimageviewer.rc c:\dev\voidimageviewer\nsis\version.nsh c:\dev\voidimageviewer\setversion.bat"
+				CommandLine="c:\dev\rescpver\Debug\rescpver.exe c:\dev\rapidocrviewer\src\version.h c:\dev\rapidocrviewer\res\rapidocrviewer.rc c:\dev\rapidocrviewer\nsis\version.nsh c:\dev\rapidocrviewer\setversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -374,7 +374,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib shlwapi.lib UnicoWS.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				SubSystem="2"
@@ -389,7 +389,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -424,7 +424,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\version.nsh \dev\voidImageViewer\setversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\version.nsh \dev\RapidOCRViewer\setversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -477,7 +477,7 @@
 				LinkLibraryDependencies="true"
 				AdditionalDependencies="ComCtl32.lib shlwapi.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				SubSystem="2"
@@ -492,7 +492,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -526,7 +526,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\version.nsh \dev\voidImageViewer\setversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\version.nsh \dev\RapidOCRViewer\setversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -583,7 +583,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -690,7 +690,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
 				SubSystem="2"
@@ -705,7 +705,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -767,7 +767,7 @@
 				OmitFramePointers="false"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;voidImageViewer_DEBUG"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;RapidOCRViewer_DEBUG"
 				StringPooling="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
@@ -794,7 +794,7 @@
 				LinkLibraryDependencies="true"
 				AdditionalDependencies="comctl32.lib UxTheme.lib Ws2_32.lib HTMLHelp.lib msimg32.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -810,7 +810,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -902,7 +902,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
 				SubSystem="2"
@@ -948,7 +948,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaversion.nsh \dev\voidImageViewer\setbetaversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaversion.nsh \dev\RapidOCRViewer\setbetaversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1007,7 +1007,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1023,7 +1023,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -1058,7 +1058,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaversion.nsh \dev\voidImageViewer\setbetaversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaversion.nsh \dev\RapidOCRViewer\setbetaversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1116,7 +1116,7 @@
 				LinkLibraryDependencies="true"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Imm32.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1132,7 +1132,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -1166,7 +1166,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaversion.nsh \dev\voidImageViewer\setbetaversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaversion.nsh \dev\RapidOCRViewer\setbetaversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1223,7 +1223,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1270,7 +1270,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaunofficialversion.nsh \dev\voidImageViewer\setbetaunofficialversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaunofficialversion.nsh \dev\RapidOCRViewer\setbetaunofficialversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1327,7 +1327,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1343,7 +1343,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -1378,7 +1378,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaunofficialversion.nsh \dev\voidImageViewer\setbetaunofficialversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaunofficialversion.nsh \dev\RapidOCRViewer\setbetaunofficialversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1435,7 +1435,7 @@
 				LinkLibraryDependencies="true"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Imm32.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1451,7 +1451,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -1485,7 +1485,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaunofficialversion.nsh \dev\voidImageViewer\setbetaunofficialversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaunofficialversion.nsh \dev\RapidOCRViewer\setbetaunofficialversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1541,7 +1541,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1588,7 +1588,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaunofficialversion.nsh \dev\voidImageViewer\setbetaunofficialversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaunofficialversion.nsh \dev\RapidOCRViewer\setbetaunofficialversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1615,7 +1615,7 @@
 				OmitFramePointers="false"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="regex;pcre\src"
-				PreprocessorDefinitions="BZ_NO_STDIO;VERSION_BETA;voidImageViewer_LITE"
+				PreprocessorDefinitions="BZ_NO_STDIO;VERSION_BETA;RapidOCRViewer_LITE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -1645,7 +1645,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1661,7 +1661,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -1696,7 +1696,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaunofficialversion.nsh \dev\voidImageViewer\setbetaunofficialversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaunofficialversion.nsh \dev\RapidOCRViewer\setbetaunofficialversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1724,7 +1724,7 @@
 				OmitFramePointers="false"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="regex;pcre\src"
-				PreprocessorDefinitions="BZ_NO_STDIO;VERSION_BETA;VERSION_X64;voidImageViewer_LITE"
+				PreprocessorDefinitions="BZ_NO_STDIO;VERSION_BETA;VERSION_X64;RapidOCRViewer_LITE"
 				StringPooling="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
@@ -1753,7 +1753,7 @@
 				LinkLibraryDependencies="true"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Imm32.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -1769,7 +1769,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="../res/voidImageViewer.Manifest"
+				AdditionalManifestFiles="../res/RapidOCRViewer.Manifest"
 				SuppressStartupBanner="false"
 				VerboseOutput="false"
 			/>
@@ -1803,7 +1803,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\voidImageViewer\src\version.h \dev\voidImageViewer\res\voidImageViewer.rc \dev\voidImageViewer\nsis\betaunofficialversion.nsh \dev\voidImageViewer\setbetaunofficialversion.bat"
+				CommandLine="\dev\rescpver\Debug\rescpver.exe \dev\RapidOCRViewer\src\version.h \dev\RapidOCRViewer\res\RapidOCRViewer.rc \dev\RapidOCRViewer\nsis\betaunofficialversion.nsh \dev\RapidOCRViewer\setbetaunofficialversion.bat"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1831,7 +1831,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="regex;pcre\src"
-				PreprocessorDefinitions="BZ_NO_STDIO;VERSION_BETA;voidImageViewer_LITE"
+				PreprocessorDefinitions="BZ_NO_STDIO;VERSION_BETA;RapidOCRViewer_LITE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
@@ -1859,7 +1859,7 @@
 				AdditionalOptions="/safeseh:no"
 				AdditionalDependencies="ComCtl32.lib Ws2_32.lib shlwapi.lib Msimg32.lib  Imm32.lib UnicoWS.lib lib\minicrt.lib Urlmon.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/voidImageViewer.exe"
+				OutputFile="$(OutDir)/RapidOCRViewer.exe"
 				LinkIncremental="1"
 				AdditionalManifestDependencies=""
 				IgnoreAllDefaultLibraries="true"
@@ -2056,11 +2056,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\voidImageViewer.ico"
+				RelativePath="..\res\RapidOCRViewer.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\voidImageViewer.rc"
+				RelativePath="..\res\RapidOCRViewer.rc"
 				>
 			</File>
 		</Filter>

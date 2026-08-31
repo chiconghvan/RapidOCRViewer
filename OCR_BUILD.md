@@ -30,9 +30,9 @@ C:\vcpkg\vcpkg integrate install
 set VCPKG_ROOT=C:\vcpkg
 C:\vcpkg\vcpkg install tesseract leptonica --triplet x64-windows
 ```
-Build (không cần truyền thêm define — `HAVE_TESSERACT` đã nằm trong `vs2026\voidImageViewer.vcxproj`):
+Build (không cần truyền thêm define — `HAVE_TESSERACT` đã nằm trong `vs2026\RapidOCRViewer.vcxproj`):
 ```bat
-msbuild vs2026\voidImageViewer.vcxproj /p:Configuration=Release /p:Platform=x64
+msbuild vs2026\RapidOCRViewer.vcxproj /p:Configuration=Release /p:Platform=x64
 ```
 vcpkg tự link `tesseract55.lib` + `leptonica-1.87.0.lib` và dùng **AppLocal** copy toàn bộ DLL runtime cần thiết vào `$(OutDir)`.
 
@@ -50,7 +50,7 @@ Nếu muốn build mock OCR (demo text, không cần Tesseract), xóa `HAVE_TESS
 
 ### 5. Portable (onedir)
 - Copy vào `dist\RapidOCRViewer-Portable\`:
-  - `vs2026\x64\Release\voidImageViewer.exe` → đổi tên `RapidOCRViewer.exe`
+  - `vs2026\x64\Release\RapidOCRViewer.exe` → đổi tên `RapidOCRViewer.exe`
   - `redist\*.dll` (cùng thư mục exe)
   - `tessdata\vie.traineddata`, `Changes.txt`, `LICENSE.txt`, `README_OCR.md`, `README_PORTABLE.txt`
 - Zip toàn bộ thành `RapidOCRViewer-Portable.zip`.
@@ -59,7 +59,7 @@ Nếu muốn build mock OCR (demo text, không cần Tesseract), xóa `HAVE_TESS
 ```bat
 makensis /DVS_VERSION=vs2026 /DBUILD_CONFIG=Release /Dx64 nsis\installer.nsi
 ```
-Sẽ đóng gói `voidImageViewer.exe` + `tessdata\vie.traineddata` + toàn bộ `redist\*.dll`. Khi cài, app tự copy DLL vào `$INSTDIR`; Uninstall xóa cả DLL và tessdata qua `_viv_process_install_command_line_options`.
+Sẽ đóng gói `RapidOCRViewer.exe` + `tessdata\vie.traineddata` + toàn bộ `redist\*.dll`. Khi cài, app tự copy DLL vào `$INSTDIR`; Uninstall xóa cả DLL và tessdata qua `_viv_process_install_command_line_options`.
 
 ## Kiểm thử nhanh
 1. Mở ảnh JPG/PNG chứa tiếng Việt.
@@ -77,5 +77,5 @@ Sẽ đóng gói `voidImageViewer.exe` + `tessdata\vie.traineddata` + toàn bộ
 
 ## Troubleshooting
 - `Tess Init failed` → kiểm tra `tessdata\vie.traineddata` cạnh exe.
-- Build error `STL1003` → `ocr_engine.cpp` phải compile as C++ (`CompileAsCpp`), đã fix trong `vs2026\voidImageViewer.vcxproj: <CompileAs>CompileAsCpp</CompileAs>`.
+- Build error `STL1003` → `ocr_engine.cpp` phải compile as C++ (`CompileAsCpp`), đã fix trong `vs2026\RapidOCRViewer.vcxproj: <CompileAs>CompileAsCpp</CompileAs>`.
 - Resource `IDC_...` missing → đã bổ sung trong `res\resource.h`.

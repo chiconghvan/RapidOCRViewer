@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by voidImageViewer.rc
+// Used by RapidOCRViewer.rc
 //
 #define IDD_FORMVIEW                    101
 #define IDD_FORMVIEW1                   101
@@ -67,7 +67,7 @@
 #define IDC_TAB3                        1034
 #define IDC_MOUSEWHEELACTION            1034
 #define IDC_ABOUTBACK                   1035
-#define IDC_ABOUTVOIDIMAGEVIEWER        1037
+#define IDC_ABOUTRAPIDOCRVIEWER        1037
 #define IDC_ABOUTTITLE                  1038
 #define IDC_ABOUTVERSION                1039
 #define IDC_WINDOWEDBACKGROUNDCOLOR     1039

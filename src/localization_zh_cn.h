@@ -28,7 +28,7 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"简体中文", // LOCALIZATION_ID_LANGUAGE
 
 	// Application name
-	"void Image Viewer", // LOCALIZATION_ID_APP_NAME
+	"RapidOCRViewer", // LOCALIZATION_ID_APP_NAME
 
 	// File menu
 	"文件(&F)", // LOCALIZATION_ID_FILE,
@@ -180,7 +180,7 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"主页(&P)", // LOCALIZATION_ID_HOME_PAGE,
 	"捐赠(&D)", // LOCALIZATION_ID_DONATE,
 	"关于(&A)", // LOCALIZATION_ID_ABOUT,
-	"https://www.voidtools.com/support/voidimageviewer/", // LOCALIZATION_ID_HELP_SUPPORT_URL,
+	"https://www.voidtools.com/support/rapidocrviewer/", // LOCALIZATION_ID_HELP_SUPPORT_URL,
 	"https://www.voidtools.com/donate/", // LOCALIZATION_ID_HELP_DONATE,
 	"https://www.voidtools.com/", // LOCALIZATION_ID_HELP_WEBSITE_URL,
 
@@ -207,13 +207,13 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 
 
 	// Dialog strings
-	"选项 - void Image Viewer", // LOCALIZATION_ID_OPTIONS_CAPTION,
+	"选项 - RapidOCRViewer", // LOCALIZATION_ID_OPTIONS_CAPTION,
 	"常规", // LOCALIZATION_ID_OPTIONS_GENERAL_DIALOG,
 	"视图", // LOCALIZATION_ID_OPTIONS_VIEW_DIALOG,
 	"控件", // LOCALIZATION_ID_OPTIONS_CONTROLS_DIALOG,
 	"确定", // LOCALIZATION_ID_OK_BUTTON,
 	"取消", // LOCALIZATION_ID_CANCEL_BUTTON,
-	"在 %APPDATA%\\voidImageViewer 中存储设置(&S)", // LOCALIZATION_ID_STORE_SETTINGS_APPDATA,
+	"在 %APPDATA%\\RapidOCRViewer 中存储设置(&S)", // LOCALIZATION_ID_STORE_SETTINGS_APPDATA,
 	"允许多个实例(&I)", // LOCALIZATION_ID_ALLOW_MULTIPLE_INSTANCES,
 	"开始菜单快捷方式(&M)", // LOCALIZATION_ID_STARTMENU_SHORTCUTS,
 	"文件关联", // LOCALIZATION_ID_ASSOCIATIONS,
@@ -251,7 +251,7 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"分钟", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
 	"秒", // LOCALIZATION_ID_CUSTOM_RATE_SECONDS,
 	"毫秒", // LOCALIZATION_ID_CUSTOM_RATE_MILLISECONDS,
-	"关于 void Image Viewer", // LOCALIZATION_ID_ABOUT_CAPTION,
+	"关于 RapidOCRViewer", // LOCALIZATION_ID_ABOUT_CAPTION,
 	"重命名", // LOCALIZATION_ID_RENAME_CAPTION,
 	"跳转到", // LOCALIZATION_ID_JUMP_TO_TITLE,
 	"搜索 Everything", // LOCALIZATION_ID_SEARCH_EVERYTHING,
