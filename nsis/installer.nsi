@@ -399,6 +399,10 @@ skip_webp_association:
 	SetOutPath "$pluginsdir\voidImageViewer\tessdata"
 	File /nonfatal "..\tessdata\vie.traineddata"
 
+	; OCR runtime DLLs (Tesseract 5 + dependencies)
+	SetOutPath "$pluginsdir\voidImageViewer"
+	File /nonfatal "..\redist\*.dll"
+
 	; File "..\Changes.txt"
 	SetOutPath "$pluginsdir\voidImageViewer"
 	WriteUninstaller "$pluginsdir\voidImageViewer\Uninstall.exe"

@@ -5065,6 +5065,35 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 			string_path_combine_utf8(tess_dst, install_path, (const utf8_t *)"tessdata\\vie.traineddata");
 			CopyFileW(tess_src, tess_dst, FALSE);
 		}
+
+		// OCR runtime DLLs
+		{
+			static const utf8_t *ocr_dlls[] = {
+				(const utf8_t *)"archive.dll",
+				(const utf8_t *)"bz2.dll",
+				(const utf8_t *)"gif.dll",
+				(const utf8_t *)"jpeg62.dll",
+				(const utf8_t *)"leptonica-1.87.0.dll",
+				(const utf8_t *)"libcurl.dll",
+				(const utf8_t *)"liblzma.dll",
+				(const utf8_t *)"libpng16.dll",
+				(const utf8_t *)"libsharpyuv.dll",
+				(const utf8_t *)"libwebp.dll",
+				(const utf8_t *)"libwebpmux.dll",
+				(const utf8_t *)"lz4.dll",
+				(const utf8_t *)"msvcp140.dll",
+				(const utf8_t *)"openjp2.dll",
+				(const utf8_t *)"tesseract55.dll",
+				(const utf8_t *)"tiff.dll",
+				(const utf8_t *)"vcruntime140.dll",
+				(const utf8_t *)"vcruntime140_1.dll",
+				(const utf8_t *)"z.dll",
+				(const utf8_t *)"zstd.dll",
+				NULL
+			};
+			for (int i = 0; ocr_dlls[i]; i++)
+				_viv_install_copy_file(install_path, temp_path, ocr_dlls[i], 1);
+		}
 		
 		if (install_options[0])
 		{
@@ -5094,6 +5123,34 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"Uninstall.exe");
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"Changes.txt");
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"voidImageViewer.ini");
+		// OCR runtime DLLs
+		{
+			static const utf8_t *ocr_dlls[] = {
+				(const utf8_t *)"archive.dll",
+				(const utf8_t *)"bz2.dll",
+				(const utf8_t *)"gif.dll",
+				(const utf8_t *)"jpeg62.dll",
+				(const utf8_t *)"leptonica-1.87.0.dll",
+				(const utf8_t *)"libcurl.dll",
+				(const utf8_t *)"liblzma.dll",
+				(const utf8_t *)"libpng16.dll",
+				(const utf8_t *)"libsharpyuv.dll",
+				(const utf8_t *)"libwebp.dll",
+				(const utf8_t *)"libwebpmux.dll",
+				(const utf8_t *)"lz4.dll",
+				(const utf8_t *)"msvcp140.dll",
+				(const utf8_t *)"openjp2.dll",
+				(const utf8_t *)"tesseract55.dll",
+				(const utf8_t *)"tiff.dll",
+				(const utf8_t *)"vcruntime140.dll",
+				(const utf8_t *)"vcruntime140_1.dll",
+				(const utf8_t *)"z.dll",
+				(const utf8_t *)"zstd.dll",
+				NULL
+			};
+			for (int i = 0; ocr_dlls[i]; i++)
+				_viv_uninstall_delete_file(uninstall_path, ocr_dlls[i]);
+		}
 		_viv_uninstall_delete_file(uninstall_path,(const utf8_t *)"tessdata\\vie.traineddata");
 		{
 			wchar_t tess_dir[STRING_SIZE];

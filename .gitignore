@@ -33,6 +33,9 @@ dist/
 *.lastbuildstate
 *.unsuccessfulbuild
 
+# Exception: OCR runtime DLLs in redist/ must be tracked for installer/portable builds
+!redist/*.dll
+
 # Build directories (generic)
 [Dd]ebug/
 [Rr]elease/
@@ -40,3 +43,6 @@ x64/
 x86/
 [Ww]in32/
 [Oo]bj/
+
+# Reasonix agent session data
+.reasonix/

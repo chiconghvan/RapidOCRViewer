@@ -21,13 +21,7 @@
 - Visual Studio 2022 Build Tools 18+ (`MSBuild 18.8`, `MSVC 14.51`)
 - Windows 10 SDK 10.0
 
-### 2. Build mặc định (mock OCR, không cần Tesseract)
-```bat
-msbuild vs2026\voidImageViewer.vcxproj /p:Configuration=Release /p:Platform=x64
-```
-Output: `vs2026\x64\Release\voidImageViewer.exe` + `tessdata\vie.traineddata` (nếu có). Chạy vẫn hiện panel, kết quả là demo text tiếng Việt.
-
-### 3. Build với Tesseract thật (khuyến nghị)
+### 2. Build với Tesseract thật (mặc định hiện tại, `HAVE_TESSERACT` đã bật sẵn trong vcxproj `Release|x64`)
 Cài vcpkg:
 ```bat
 git clone https://github.com/microsoft/vcpkg C:\vcpkg
@@ -36,25 +30,36 @@ C:\vcpkg\vcpkg integrate install
 set VCPKG_ROOT=C:\vcpkg
 C:\vcpkg\vcpkg install tesseract leptonica --triplet x64-windows
 ```
-Build với `HAVE_TESSERACT`:
+Build (không cần truyền thêm define — `HAVE_TESSERACT` đã nằm trong `vs2026\voidImageViewer.vcxproj`):
 ```bat
-msbuild vs2026\voidImageViewer.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PreprocessorDefinitions=HAVE_TESSERACT
+msbuild vs2026\voidImageViewer.vcxproj /p:Configuration=Release /p:Platform=x64
 ```
-Hoặc mở VS → Project Properties → C/C++ → Preprocessor → thêm `HAVE_TESSERACT` cho `Release|x64` và `Debug|x64`. Thêm:
-- `AdditionalIncludeDirectories: $(VCPKG_ROOT)\installed\x64-windows\include`
-- `AdditionalLibraryDirectories: $(VCPKG_ROOT)\installed\x64-windows\lib`
-- `AdditionalDependencies: tesseract54.lib;leptonica.lib;...` (vcpkg tự link qua `vcpkg integrate`).
+vcpkg tự link `tesseract55.lib` + `leptonica-1.87.0.lib` và dùng **AppLocal** copy toàn bộ DLL runtime cần thiết vào `$(OutDir)`.
+
+Nếu muốn build mock OCR (demo text, không cần Tesseract), xóa `HAVE_TESSERACT` khỏi `PreprocessorDefinitions` trong vcxproj rồi build lại.
+
+### 3. Runtime DLLs (`redist\`)
+- Sau khi build với Tesseract thật, exe import `tesseract55.dll` + `leptonica-1.87.0.dll` (+ 18 DLL phụ thuộc).
+- Các DLL đã được thu thập vào **`redist\`** trong repo (20 file: `tesseract55.dll`, `leptonica-1.87.0.dll`, `archive`, `bz2`, `gif`, `jpeg62`, `libcurl`, `liblzma`, `libpng16`, `libsharpyuv`, `libwebp`, `libwebpmux`, `lz4`, `msvcp140`, `openjp2`, `tiff`, `vcruntime140`, `vcruntime140_1`, `z`, `zstd`).
+- Cập nhật lại nếu đổi version vcpkg: copy từ `C:\vcpkg\installed\x64-windows\bin\*.dll` (+ `vcruntime140*.dll`, `msvcp140.dll` từ `VC\Redist\MSVC\*\x64\Microsoft.VC*.CRT\`).
 
 ### 4. tessdata
 - File `tessdata\vie.traineddata` (~7.7 MB, tessdata chuẩn) đã được đặt sẵn trong repo.
 - PostBuild `xcopy` sẽ copy vào `$(OutDir)tessdata\vie.traineddata`.
 - Runtime `ocr_init` thử `exeDir\tessdata` rồi `exeDir` fallback.
 
-### 5. Installer (NSIS)
+### 5. Portable (onedir)
+- Copy vào `dist\RapidOCRViewer-Portable\`:
+  - `vs2026\x64\Release\voidImageViewer.exe` → đổi tên `RapidOCRViewer.exe`
+  - `redist\*.dll` (cùng thư mục exe)
+  - `tessdata\vie.traineddata`, `Changes.txt`, `LICENSE.txt`, `README_OCR.md`, `README_PORTABLE.txt`
+- Zip toàn bộ thành `RapidOCRViewer-Portable.zip`.
+
+### 6. Installer (NSIS)
 ```bat
 makensis /DVS_VERSION=vs2026 /DBUILD_CONFIG=Release /Dx64 nsis\installer.nsi
 ```
-Sẽ đóng gói `voidImageViewer.exe` + `tessdata\vie.traineddata`. Uninstall xóa `tessdata` qua `_viv_process_install_command_line_options`.
+Sẽ đóng gói `voidImageViewer.exe` + `tessdata\vie.traineddata` + toàn bộ `redist\*.dll`. Khi cài, app tự copy DLL vào `$INSTDIR`; Uninstall xóa cả DLL và tessdata qua `_viv_process_install_command_line_options`.
 
 ## Kiểm thử nhanh
 1. Mở ảnh JPG/PNG chứa tiếng Việt.
