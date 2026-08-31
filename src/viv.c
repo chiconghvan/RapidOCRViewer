@@ -797,7 +797,9 @@ static DWORD last_process_command_line_tick;
 static BYTE got_last_process_command_line_tick = 0;
 
 // OCR state
-static BYTE _viv_ocr_mode = 0;
+// OCR is ON by default: the user can immediately draw a bounding box to get OCR
+// without first enabling the feature. Ctrl+Shift+O / View menu / ESC still toggle it off.
+static BYTE _viv_ocr_mode = 1;
 static BYTE _viv_ocr_selecting = 0;
 static POINT _viv_ocr_start_pt = {0,0};
 static POINT _viv_ocr_current_pt = {0,0};

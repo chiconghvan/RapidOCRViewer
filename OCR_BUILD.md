@@ -2,10 +2,10 @@
 
 ## Tổng quan
 - **Chế độ Fast OCR** được tích hợp trực tiếp vào viewer (không gọi `tesseract.exe`).
-- Kích hoạt: `View → Fast OCR` hoặc `Ctrl+Shift+O` (check mark).
-- Khi bật: con trỏ `crosshair`, kéo vẽ bounding box trên vùng ảnh → crop từ `HBITMAP` đã decode → chạy Tesseract 5 (vie) bất đồng bộ → tự động hiện **panel phải 320px** với `Edit` đa dòng + nút **Copy/Clear**.
+- **OCR mặc định luôn BẬT**: ngay khi mở ảnh, con trỏ là `crosshair`; kéo vẽ bounding box trên vùng ảnh → crop từ `HBITMAP` đã decode → chạy Tesseract 5 (vie) bất đồng bộ → tự động hiện **panel phải 320px** với `Edit` đa dòng + nút **Copy/Clear**. Không cần bật tính năng trước.
+- Tắt/bật lại tạm thời: `View → Fast OCR` hoặc `Ctrl+Shift+O` (check mark).
 - Đổi ảnh (Next/Prev/Home) sẽ **tự xóa** panel để vẽ lại liên tục (theo yêu cầu).
-- `ESC` thoát Fast OCR hoặc hủy thao tác vẽ.
+- `ESC` thoát Fast OCR (tắt tạm thời) hoặc hủy thao tác vẽ.
 
 ## Kiến trúc
 - `src/ocr_engine.h/.cpp` – wrapper `TessBaseAPI` + Leptonica `PIX`. Nếu không có `HAVE_TESSERACT`, build mock (demo text) để vẫn kiểm thử UI/Copy.
@@ -63,11 +63,10 @@ Sẽ đóng gói `RapidOCRViewer.exe` + `tessdata\vie.traineddata` + toàn bộ 
 
 ## Kiểm thử nhanh
 1. Mở ảnh JPG/PNG chứa tiếng Việt.
-2. `Ctrl+Shift+O` → panel hiện (nếu đã có kết quả cũ thì hiển thị placeholder).
-3. Kéo vẽ vùng chữ → thả → panel hiện “Recognizing…” → kết quả sau ~0.3-1s (mock: demo text, real: text Việt).
-4. Edit text trong panel, bấm **Copy** → paste vào Notepad kiểm tra clipboard Unicode.
-5. Bấm `Next`/`Prev` → panel tự xóa.
-6. `ESC` thoát Fast OCR.
+2. **OCR đã BẬT sẵn**: con trỏ là `crosshair`, kéo vẽ vùng chữ ngay trên ảnh → thả → panel hiện “Recognizing…” → kết quả sau ~0.3-1s (mock: demo text, real: text Việt). Không cần bật tính năng.
+3. Edit text trong panel, bấm **Copy** → paste vào Notepad kiểm tra clipboard Unicode.
+4. Bấm `Next`/`Prev` → panel tự xóa.
+5. `ESC` tắt OCR tạm thời; `Ctrl+Shift+O` bật lại.
 
 ## Lưu ý hiệu năng
 - Crop trực tiếp từ `HBITMAP` qua `GetDIBits` → `Pix`, không ghi file tạm.

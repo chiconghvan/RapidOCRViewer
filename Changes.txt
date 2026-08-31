@@ -1,3 +1,7 @@
+Monday, 1 September 2026: Version 1.0.0.16
+	OCR (Fast OCR) is now ON by default - draw a bounding box over the image to get OCR results immediately, no need to enable the feature first.
+	Use View -> Fast OCR, Ctrl+Shift+O or ESC to toggle it off temporarily.
+
 Monday, 12 January 2026: Version 1.0.0.15
 	fixed an issue with scrolling large images.
 	improved position offset when using numpad keys.
