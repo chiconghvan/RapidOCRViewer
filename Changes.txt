@@ -1,3 +1,10 @@
+Thứ Ba, 01 Tháng 09 2026: Phiên bản 1.1.1 (v1.1.1)
+	- Thêm thanh cuộn ngang/dọc cho ảnh khi zoom vượt quá vùng hiển thị — tự động ẩn khi không cần
+	- Thanh cuộn ngang đặt ngay phía trên thanh điều hướng, thanh cuộn dọc ở mép phải vùng ảnh (không che bảng OCR)
+	- Hỗ trợ cuộn ngang: giữ Shift + lăn chuột, và nghiêng bánh xe (WM_MOUSEHWHEEL)
+	- Xử lý cuộn mượt qua WM_HSCROLL/WM_VSCROLL (kéo thumb, cuộn theo dòng/trang, Home/End)
+	- Tự động cập nhật vị trí thanh cuộn khi di chuyển/zoom/đổi ảnh và ẩn khi fullscreen hoặc không có ảnh
+
 Tuesday, 01 September 2026: Version 1.1.0 (v1.1.0)
 	- Thêm tùy chọn "Merge paragraphs" (gộp đoạn) trong bảng điều khiển OCR, mặc định bật
 	- OCR: gộp các dòng trong cùng một đoạn văn thành văn bản trôi chảy, cách đoạn bằng dòng trống

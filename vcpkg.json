@@ -1,6 +1,6 @@
 {
   "name": "rapidocrviewer",
-  "version": "1.0.15",
+  "version": "1.1.1",
   "description": "RapidOCRViewer with Fast OCR (Tesseract 5 + Leptonica)",
   "dependencies": [
     "tesseract",

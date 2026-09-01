@@ -107,6 +107,10 @@
 // maintain correct image aspect ratio when window is clipped on auto size.
 //
 // DONE:
+// 1.1.1
+// *Added horizontal/vertical scrollbars when zoomed image exceeds viewport; auto-hide when not needed.
+// *Horizontal scrollbar sits just above navigation bar; vertical at right edge of image area (not overlapping OCR panel).
+// *Horizontal scroll via Shift+wheel and WM_MOUSEHWHEEL; smooth WM_HSCROLL/WM_VSCROLL handling.
 // 1.1.0
 // *OCR: added "Merge paragraphs" option (default on); merges lines within a
 //   paragraph into flowing text with blank lines between paragraphs.
@@ -297,6 +301,9 @@
 #include "viv.h"
 #include "ocr_engine.h"
 #include "ocr_panel.h"
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
 
 enum
 {
@@ -563,6 +570,9 @@ static void _viv_command_line_options(void);
 static void _viv_install_association(DWORD flags);
 static void _viv_uninstall_association(DWORD flags);
 static void _viv_view_scroll(int mx,int my);
+static void _viv_update_scrollbars(void);
+static void _viv_on_hscroll(WPARAM wParam, LPARAM lParam);
+static void _viv_on_vscroll(WPARAM wParam, LPARAM lParam);
 static void _viv_options_update_sheild(HWND hwnd);
 static void _viv_update_color_button_bitmap(HWND hwnd);
 static void _viv_delete_color_button_bitmap(HWND hwnd);
@@ -674,6 +684,8 @@ static HWND _viv_hwnd = 0;
 static HWND _viv_status_hwnd = 0;
 static HWND _viv_toolbar_hwnd = 0;
 static HWND _viv_rebar_hwnd = 0;
+static HWND _viv_hscroll_hwnd = 0;
+static HWND _viv_vscroll_hwnd = 0;
 //static HWND _viv_tooltip_hwnd = 0;
 static HIMAGELIST _viv_toolbar_image_list = 0;
 static HANDLE _viv_mutex = 0;
@@ -1571,6 +1583,7 @@ static void _viv_clear(void)
 	_viv_image_wide = 0;
 	_viv_image_high = 0;
 	_viv_animation_play = 1;
+	_viv_update_scrollbars();
 }
 
 static void _viv_clear_frames(_viv_frame_t *frames,int loaded_count)
@@ -4004,10 +4017,35 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			
 		case WM_MOUSEWHEEL:
 		{
+			// Shift + wheel => horizontal scroll
+			if ((GetKeyState(VK_SHIFT) & 0x8000) || (GET_KEYSTATE_WPARAM(wParam) & MK_SHIFT))
+			{
+				int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+				int scroll = (delta / WHEEL_DELTA) * 60;
+				// Positive wheel (away) scrolls left, negative scrolls right
+				_viv_view_scroll(scroll, 0);
+				break;
+			}
 			_viv_do_mousewheel_action(_viv_get_current_key_mod_flags() == CONFIG_KEYFLAG_CTRL ? config_ctrl_mouse_wheel_action : config_mouse_wheel_action,GET_WHEEL_DELTA_WPARAM(wParam),GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam));
 			
 			break;
 		}
+
+		case WM_MOUSEHWHEEL:
+		{
+			int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+			int scroll = (delta / WHEEL_DELTA) * 60;
+			_viv_view_scroll(scroll, 0);
+			break;
+		}
+
+		case WM_HSCROLL:
+			_viv_on_hscroll(wParam, lParam);
+			break;
+
+		case WM_VSCROLL:
+			_viv_on_vscroll(wParam, lParam);
+			break;
 		
 		case WM_COPYDATA:
 		{
@@ -5853,6 +5891,11 @@ static int _viv_init(int nCmdShow)
 	_viv_status_show(config_show_status);
 	_viv_controls_show(config_show_controls);
 	ocr_panel_create(_viv_hwnd);
+	// Create child scrollbars - horizontal below image area (above status), vertical at right of image area
+	_viv_hscroll_hwnd = CreateWindowExW(0, L"SCROLLBAR", L"", WS_CHILD | SBS_HORZ, 0,0,0,0, _viv_hwnd, (HMENU)51001, os_hinstance, NULL);
+	_viv_vscroll_hwnd = CreateWindowExW(0, L"SCROLLBAR", L"", WS_CHILD | SBS_VERT, 0,0,0,0, _viv_hwnd, (HMENU)51002, os_hinstance, NULL);
+	ShowWindow(_viv_hscroll_hwnd, SW_HIDE);
+	ShowWindow(_viv_vscroll_hwnd, SW_HIDE);
 	
 	DragAcceptFiles(_viv_hwnd,TRUE);
 
@@ -5932,6 +5975,8 @@ static void _viv_kill(void)
 	_viv_clear_preload_frames();
 	_viv_clear();
 	_viv_process_pending_clear();
+	if (_viv_hscroll_hwnd) { DestroyWindow(_viv_hscroll_hwnd); _viv_hscroll_hwnd=0; }
+	if (_viv_vscroll_hwnd) { DestroyWindow(_viv_vscroll_hwnd); _viv_vscroll_hwnd=0; }
 	ocr_panel_destroy();
 	ocr_shutdown();
 	if (_viv_ocr_thread) { WaitForSingleObject(_viv_ocr_thread, 1000); CloseHandle(_viv_ocr_thread); _viv_ocr_thread=0; }
@@ -7015,6 +7060,7 @@ static void _viv_view_set(int view_x,int view_y,int invalidate)
 debug_printf("SETVIEW %d %d ix %d iy %d rw %d rh %d wide %d high %d\n",_viv_view_x,_viv_view_y,(int)(_viv_view_ix),(int)(_viv_view_iy),rw,rh,wide,high);
 
 	_viv_toolbar_update_buttons();
+	_viv_update_scrollbars();
 }
 
 static void _viv_toggle_fullscreen(void)
@@ -12408,7 +12454,176 @@ static void _viv_view_scroll(int mx,int my)
 		InvalidateRect(_viv_hwnd,0,FALSE);
 	}
 	
+	_viv_update_scrollbars();
 //	UpdateWindow(_viv_hwnd);
+}
+
+static void _viv_update_scrollbars(void)
+{
+	if (!_viv_hwnd || !_viv_hscroll_hwnd || !_viv_vscroll_hwnd) return;
+	// hide in fullscreen or when no image
+	if (_viv_is_fullscreen || !_viv_image_wide || !_viv_image_high || !_viv_frame_count)
+	{
+		ShowWindow(_viv_hscroll_hwnd, SW_HIDE);
+		ShowWindow(_viv_vscroll_hwnd, SW_HIDE);
+		return;
+	}
+	RECT rc;
+	GetClientRect(_viv_hwnd, &rc);
+	int fullWide = rc.right - rc.left;
+	int wide = fullWide;
+	int high = rc.bottom - rc.top - _viv_get_status_high() - _viv_get_controls_high();
+	if (ocr_panel_is_visible()) { wide -= OCR_PANEL_WIDTH; if (wide < 0) wide = 0; }
+	int controlsH = _viv_get_controls_high();
+	int rw, rh;
+	_viv_get_render_size(&rw, &rh);
+	int needH = (rw > wide && wide > 0) ? 1 : 0;
+	int needV = (rh > high && high > 0) ? 1 : 0;
+	int hH = GetSystemMetrics(SM_CYHSCROLL);
+	int wV = GetSystemMetrics(SM_CXVSCROLL);
+	// Horizontal - placed just above navigation bar (controls), not overlapping it, and not at window bottom (below status)
+	// image area: y=0..high, controls: y=high..high+controlsH, status: y=high+controlsH..clientHeight
+	if (!needH)
+	{
+		ShowWindow(_viv_hscroll_hwnd, SW_HIDE);
+	}
+	else
+	{
+		int hWide = wide - (needV ? wV : 0);
+		if (hWide < 0) hWide = 0;
+		int hx = 0;
+		int hy = high - hH; // directly above navigation bar (controls), inside bottom edge of image
+		if (hy < 0) hy = 0;
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		si.nMin = 0;
+		si.nMax = rw - 1;
+		si.nPage = wide;
+		int cX = (wide - rw) / 2;
+		int pos = _viv_view_x - cX; // 0 .. rw-wide
+		if (pos < 0) pos = 0;
+		if (pos > rw - wide) pos = rw - wide;
+		si.nPos = pos;
+		SetScrollInfo(_viv_hscroll_hwnd, SB_CTL, &si, TRUE);
+		SetWindowPos(_viv_hscroll_hwnd, NULL, hx, hy, hWide, hH, SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+		ShowWindow(_viv_hscroll_hwnd, SW_SHOW);
+		EnableScrollBar(_viv_hscroll_hwnd, SB_CTL, ESB_ENABLE_BOTH);
+		// Ensure above status/toolbar
+		SetWindowPos(_viv_hscroll_hwnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	}
+	// Vertical - placed at right edge of image area, left of OCR panel
+	if (!needV)
+	{
+		ShowWindow(_viv_vscroll_hwnd, SW_HIDE);
+	}
+	else
+	{
+		int vHigh = high - (needH ? hH : 0);
+		if (vHigh < 0) vHigh = 0;
+		int vx = wide - wV;
+		if (vx < 0) vx = 0;
+		int vy = 0; // top of image area
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		si.nMin = 0;
+		si.nMax = rh - 1;
+		si.nPage = high;
+		int cY = (high - rh) / 2;
+		int pos = _viv_view_y - cY;
+		if (pos < 0) pos = 0;
+		if (pos > rh - high) pos = rh - high;
+		si.nPos = pos;
+		SetScrollInfo(_viv_vscroll_hwnd, SB_CTL, &si, TRUE);
+		SetWindowPos(_viv_vscroll_hwnd, NULL, vx, vy, wV, vHigh, SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+		ShowWindow(_viv_vscroll_hwnd, SW_SHOW);
+		EnableScrollBar(_viv_vscroll_hwnd, SB_CTL, ESB_ENABLE_BOTH);
+		SetWindowPos(_viv_vscroll_hwnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	}
+}
+
+static void _viv_on_hscroll(WPARAM wParam, LPARAM lParam)
+{
+	RECT rc;
+	GetClientRect(_viv_hwnd, &rc);
+	int wide = rc.right - rc.left;
+	int high = rc.bottom - rc.top - _viv_get_status_high() - _viv_get_controls_high();
+	if (ocr_panel_is_visible()) { wide -= OCR_PANEL_WIDTH; if (wide < 0) wide = 0; }
+	int rw, rh;
+	_viv_get_render_size(&rw, &rh);
+	if (rw <= wide || wide <= 0) return;
+	SCROLLINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	HWND hBar = _viv_hscroll_hwnd ? _viv_hscroll_hwnd : _viv_hwnd;
+	int barType = _viv_hscroll_hwnd ? SB_CTL : SB_HORZ;
+	GetScrollInfo(hBar, barType, &si);
+	int pos = si.nPos;
+	int maxPos = rw - wide;
+	switch (LOWORD(wParam))
+	{
+		case SB_LINELEFT: pos -= 30; break;
+		case SB_LINERIGHT: pos += 30; break;
+		case SB_PAGELEFT: pos -= si.nPage; break;
+		case SB_PAGERIGHT: pos += si.nPage; break;
+		case SB_THUMBTRACK:
+		case SB_THUMBPOSITION: pos = si.nTrackPos; break;
+		case SB_LEFT: pos = 0; break;
+		case SB_RIGHT: pos = maxPos; break;
+		default: return;
+	}
+	if (pos < 0) pos = 0;
+	if (pos > maxPos) pos = maxPos;
+	if (pos == si.nPos) return;
+	int cX = (wide - rw) / 2;
+	int new_view_x = cX + pos;
+	_viv_view_set(new_view_x, _viv_view_y, 1);
+	// _viv_view_set will update scrollbars
+	InvalidateRect(_viv_hwnd, NULL, FALSE);
+}
+
+static void _viv_on_vscroll(WPARAM wParam, LPARAM lParam)
+{
+	RECT rc;
+	GetClientRect(_viv_hwnd, &rc);
+	int wide = rc.right - rc.left;
+	int high = rc.bottom - rc.top - _viv_get_status_high() - _viv_get_controls_high();
+	if (ocr_panel_is_visible()) { wide -= OCR_PANEL_WIDTH; if (wide < 0) wide = 0; }
+	int rw, rh;
+	_viv_get_render_size(&rw, &rh);
+	if (rh <= high || high <= 0) return;
+	SCROLLINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	HWND hBar = _viv_vscroll_hwnd ? _viv_vscroll_hwnd : _viv_hwnd;
+	int barType = _viv_vscroll_hwnd ? SB_CTL : SB_VERT;
+	GetScrollInfo(hBar, barType, &si);
+	int pos = si.nPos;
+	int maxPos = rh - high;
+	switch (LOWORD(wParam))
+	{
+		case SB_LINEUP: pos -= 30; break;
+		case SB_LINEDOWN: pos += 30; break;
+		case SB_PAGEUP: pos -= si.nPage; break;
+		case SB_PAGEDOWN: pos += si.nPage; break;
+		case SB_THUMBTRACK:
+		case SB_THUMBPOSITION: pos = si.nTrackPos; break;
+		case SB_TOP: pos = 0; break;
+		case SB_BOTTOM: pos = maxPos; break;
+		default: return;
+	}
+	if (pos < 0) pos = 0;
+	if (pos > maxPos) pos = maxPos;
+	if (pos == si.nPos) return;
+	int cY = (high - rh) / 2;
+	int new_view_y = cY + pos;
+	_viv_view_set(_viv_view_x, new_view_y, 1);
+	InvalidateRect(_viv_hwnd, NULL, FALSE);
 }
 
 static void _viv_update_color_button_bitmap(HWND hwnd)
@@ -14848,6 +15063,7 @@ static void _viv_start_first_frame(void)
 
 	InvalidateRect(_viv_hwnd,NULL,FALSE);
 	UpdateWindow(_viv_hwnd);
+	_viv_update_scrollbars();
 }			
 
 // the preload has completed and we 
