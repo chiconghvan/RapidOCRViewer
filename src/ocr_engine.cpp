@@ -190,6 +190,33 @@ wchar_t* ocr_recognize_hbitmap(HBITMAP hbitmap, RECT srcRect) {
     wchar_t *wstr = (wchar_t*)malloc(wlen * sizeof(wchar_t));
     if (wstr) MultiByteToWideChar(CP_UTF8, 0, utf8, -1, wstr, wlen);
     TessDeleteText(utf8); // free inside tesseract55.dll (matching CRT)
+
+    // Normalize line breaks: Tesseract emits '\n' (LF), but the Windows
+    // multiline EDIT control only renders line breaks for '\r\n' (CRLF).
+    // A lone LF shows up as no line break (or a garbage glyph), so the OCR
+    // result appears "stuck together". Convert bare '\n' to '\r\n'.
+    {
+        size_t n = 0;
+        for (size_t i = 0; wstr && wstr[i] != 0; i++) {
+            if (wstr[i] == L'\n' && (i == 0 || wstr[i-1] != L'\r')) n++;
+        }
+        if (n > 0 && wstr) {
+            size_t newlen = (size_t)wlen + n;
+            wchar_t *nw = (wchar_t*)malloc(newlen * sizeof(wchar_t));
+            if (nw) {
+                size_t j = 0;
+                for (size_t i = 0; wstr[i] != 0; i++) {
+                    if (wstr[i] == L'\n' && (i == 0 || wstr[i-1] != L'\r')) {
+                        nw[j++] = L'\r';
+                    }
+                    nw[j++] = wstr[i];
+                }
+                nw[j] = 0;
+                free(wstr);
+                wstr = nw;
+            }
+        }
+    }
     return wstr;
 }
 
