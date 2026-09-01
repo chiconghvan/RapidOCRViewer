@@ -1,6 +1,16 @@
-Monday, 1 September 2026: Version 1.0.0.16
-	OCR (Fast OCR) is now ON by default - draw a bounding box over the image to get OCR results immediately, no need to enable the feature first.
-	Use View -> Fast OCR, Ctrl+Shift+O or ESC to toggle it off temporarily.
+Thứ Ba, 01 Tháng 09 2026: Phiên bản 1.0.0.0 (v1.0.0)
+	🎉 **Phát hành chính thức RapidOCRViewer!**
+	- Thay đổi tên dự án từ voidImageViewer → RapidOCRViewer
+	- Tích hợp OCR engine Tesseract 5 với traineddata tiếng Việt
+	- OCR (Fast OCR) mặc định luôn bật — vẽ khung lên ảnh để nhận dạng ngay, không cần bật tính năng trước
+	- Dùng View → Fast OCR, Ctrl+Shift+O hoặc ESC để tắt tạm thời
+	- Sửa lỗi memory bug trong OCR engine
+	- Chuẩn hóa xuống dòng OCR (LF → CRLF) cho Windows EDIT control
+	- Hỗ trợ đóng gói Portable (zip) và Installer (NSIS)
+	- Hỗ trợ đa ngôn ngữ: giao diện English / Chinese (中文)
+	- Xem ảnh BMP, GIF, ICO, PNG, JPG, TIF, WEBP (kể cả animated)
+	- Tích hợp Everything search
+	- Tùy chỉnh bàn phím & chuột, slideshow, fullscreen, và nhiều tính năng khác
 
 Monday, 12 January 2026: Version 1.0.0.15
 	fixed an issue with scrolling large images.
