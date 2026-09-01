@@ -49,7 +49,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OBJCXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "min macOS")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "min macOS (UTType/Vision cần 11+)")
 # Universal2: chạy cả Intel lẫn Apple Silicon khi build với Xcode
 # cmake -B build -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 if(NOT CMAKE_OSX_ARCHITECTURES)
@@ -196,9 +196,8 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tessdata/vie.traineddata")
         DESTINATION "RapidOCRViewer.app/Contents/Resources/tessdata")
 endif()
 
-# Includes
+# Includes - chỉ macos + libwebp (không include src/ Win32 để tránh utf8_t/BOOL/SIZE_T lỗi trên macOS)
 target_include_directories(RapidOCRViewer PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/macos"
     "${CMAKE_CURRENT_SOURCE_DIR}/libwebp/src"
 )

@@ -249,81 +249,6 @@ jobs:
             dist/RapidOCRViewer-macOS.dmg
 
   # ============================================================
-  # macOS CROSS: đóng gói DMG bọc Windows exe (Wine) - giữ tương thích cũ
-  # ============================================================
-  build-macos:
-    runs-on: macos-latest
-    needs: build-windows
-    outputs:
-      version: ${{ needs.build-windows.outputs.version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download Windows exe
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-exe
-          path: _win
-
-      - name: Restore exe to expected location
-        shell: bash
-        run: |
-          set -e
-          mkdir -p vs2026/x64/Release/tessdata
-          mkdir -p redist
-          # exe
-          if [ -f "_win/RapidOCRViewer.exe" ]; then
-            cp -f "_win/RapidOCRViewer.exe" vs2026/x64/Release/RapidOCRViewer.exe
-          elif [ -f "_win/vs2026/x64/Release/RapidOCRViewer.exe" ]; then
-            cp -f "_win/vs2026/x64/Release/RapidOCRViewer.exe" vs2026/x64/Release/RapidOCRViewer.exe
-          else
-            find _win -name "RapidOCRViewer.exe" -exec cp -f {} vs2026/x64/Release/RapidOCRViewer.exe \; || true
-          fi
-          # dlls
-          find _win -name "*.dll" -exec cp -f {} vs2026/x64/Release/ \; 2>/dev/null || true
-          find _win -name "*.dll" -exec cp -f {} redist/ \; 2>/dev/null || true
-          # tessdata
-          find _win -name "vie.traineddata" -exec cp -f {} tessdata/vie.traineddata \; 2>/dev/null || true
-          find _win -name "vie.traineddata" -exec cp -f {} vs2026/x64/Release/tessdata/vie.traineddata \; 2>/dev/null || true
-          mkdir -p vs2026/x64/Release/tessdata
-          [ -f "tessdata/vie.traineddata" ] && cp -f tessdata/vie.traineddata vs2026/x64/Release/tessdata/ || true
-          ls -lh vs2026/x64/Release/ || true
-          ls -lh redist/ || true
-
-      - name: Install macOS deps
-        shell: bash
-        run: |
-          brew update
-          brew install mingw-w64 nsis create-dmg || brew install mingw-w64 nsis || true
-          which x86_64-w64-mingw32-gcc || echo "mingw not found"
-          which makensis || echo "makensis not found"
-          which hdiutil && echo "hdiutil ok"
-
-      - name: Build DMG (Chinese + English)
-        shell: bash
-        run: |
-          set -e
-          chmod +x build_macos.sh
-          # build both langs via --skip-build (reuse Windows exe)
-          ./build_macos.sh --cross Chinese --skip-build --dmg
-          ./build_macos.sh --cross English --skip-build --dmg
-          # also ensure portable zips exist for macOS (reuse)
-          ./build_macos.sh --cross Chinese --skip-build --portable || true
-          ls -lh dist/ || true
-          ls -lh *.dmg 2>/dev/null || true
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-artifacts
-          retention-days: 7
-          path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/RapidOCRViewer-Portable/
-
-  # ============================================================
   # Linux: đóng gói tar.gz (cross-compile hoặc reuse exe từ Windows)
   # ============================================================
   build-linux:
@@ -387,7 +312,7 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    needs: [build-windows, build-macos, build-macos-native, build-linux]
+    needs: [build-windows, build-macos-native, build-linux]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -409,8 +334,6 @@ jobs:
           mkdir -p release_assets
           # Windows
           find _artifacts/windows-artifacts -type f \( -name "*.zip" -o -name "*.exe" \) -exec cp -f {} release_assets/ \; 2>/dev/null || true
-          # macOS cross (Wine)
-          find _artifacts/macos-artifacts -type f \( -name "*.dmg" -o -name "*.zip" \) -exec cp -f {} release_assets/ \; 2>/dev/null || true
           # macOS native (Apple Clang .app)
           find _artifacts/macos-native-artifacts -type f \( -name "*.dmg" -o -name "*.zip" \) -exec cp -f {} release_assets/ \; 2>/dev/null || true
           # Linux

@@ -56,32 +56,6 @@ jobs:
           dir dist
           if not exist dist\RapidOCRViewer-Portable\RapidOCRViewer.exe exit /b 1
 
-  package-macos-check:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check build_macos.sh syntax
-        shell: bash
-        run: |
-          bash -n build_macos.sh
-          chmod +x build_macos.sh
-          ./build_macos.sh --help
-
-      - name: Test portable packaging (mock, no real compile)
-        shell: bash
-        run: |
-          # Dùng vs2026/x64/Release hiện có nếu có, hoặc tạo placeholder
-          mkdir -p vs2026/x64/Release/tessdata
-          [ -f "tessdata/vie.traineddata" ] && cp -f tessdata/vie.traineddata vs2026/x64/Release/tessdata/ || true
-          # Tạo fake exe nếu chưa có để test packaging
-          if [ ! -f "vs2026/x64/Release/RapidOCRViewer.exe" ]; then
-            echo "fake exe for CI" > vs2026/x64/Release/RapidOCRViewer.exe
-          fi
-          ./build_macos.sh --cross --skip-build --portable
-          ls -lh dist/ || true
-          test -d dist/RapidOCRViewer-Portable
-
   build-macos-native:
     runs-on: macos-latest
     steps:
