@@ -2,41 +2,41 @@
 # ============================================================
 # build_macos.sh - macOS build / packaging script for RapidOCRViewer
 #
-# LƯU Ý QUAN TRỌNG:
-#   RapidOCRViewer là ứng dụng Win32 thuần (WinAPI, GDI/GDI+, WinMain,
-#   WIN32_FIND_DATA, Registry, NSIS). KHÔNG thể build native macOS
-#   (Cocoa/AppKit) nếu không port lại toàn bộ GUI.
-#   => Script này CHẠY TRÊN macOS nhưng CROSS-COMPILE ra binary Windows
-#      (RapidOCRViewer.exe) bằng MinGW-w64, sau đó đóng gói:
-#        - Portable zip  (dist/RapidOCRViewer-Portable*.zip)
-#        - DMG           (dist/RapidOCRViewer-*.dmg)  - drag & drop, chứa exe + Wine note
-#        - NSIS installer (nếu makensis có sẵn, output giống Windows)
+# Hai chế độ:
+#   1) NATIVE (mới, khuyến nghị) - Apple Clang + AppKit + CMake:
+#        ./build_macos.sh --native[ --mock]
+#        -> build RapidOCRViewer.app THẬT SỰ chạy native trên macOS
+#           (không cần Wine, dùng Cocoa/ARC, link tesseract/leptonica brew)
+#        Yêu cầu: Xcode CLT (clang), cmake, brew tesseract leptonica
+#        Output:  build/macos/Release/RapidOCRViewer.app
+#                 dist/RapidOCRViewer-<ver>-macOS.dmg
+#                 dist/RapidOCRViewer-<ver>-macOS.zip
 #
-# Tương đương Windows:
-#   build_portable.bat  -> ./build_macos.sh --portable
-#   build_installer.bat -> ./build_macos.sh --installer
+#   2) CROSS (cũ, giữ tương thích) - MinGW-w64 cross ra Windows exe:
+#        ./build_macos.sh --cross [Chinese|English] [--portable|--dmg|--installer|--all]
+#        -> CROSS-COMPILE ra RapidOCRViewer.exe (Win32) rồi đóng gói zip/dmg/nsis
+#        Output: dist/RapidOCRViewer-Portable*.zip  +  RapidOCRViewer-*-Setup.exe
 #
-# Yêu cầu trên macOS (cài 1 lần):
+# Mặc định: nếu không truyền --native/--cross và đang ở macOS + có clang/cmake
+#           thì dùng --native. Trên CI/Linux hoặc khi cần exe Windows hãy dùng --cross.
+#
+# Yêu cầu cho --native:
+#   xcode-select --install
+#   brew install cmake tesseract leptonica pkg-config
+#   # optional: brew install create-dmg (để tạo DMG đẹp)
+#
+# Yêu cầu cho --cross:
 #   brew install mingw-w64 tesseract leptonica nsis create-dmg
-#   # hoặc: brew install mingw-w64 tesseract leptonica
-#   # (nsis/create-dmg là optional, chỉ cần khi muốn .exe installer / .dmg)
 #
-# Sử dụng:
-#   ./build_macos.sh [Chinese|English] [x64] [--portable|--dmg|--installer|--all] [--skip-build] [--mock]
-#   Ví dụ:
-#     ./build_macos.sh                          # Chinese, x64, --all
-#     ./build_macos.sh English --portable       # chỉ portable, tiếng Anh
-#     ./build_macos.sh Chinese --dmg            # chỉ DMG
-#     ./build_macos.sh --skip-build --portable  # bỏ qua compile, chỉ đóng gói (dùng khi đã có exe sẵn)
-#     ./build_macos.sh --mock --portable        # build mock OCR (không cần Tesseract)
+# Ví dụ:
+#   ./build_macos.sh --native                          # build app native, Tesseract thật
+#   ./build_macos.sh --native --mock                   # build app native, mock OCR
+#   ./build_macos.sh --native --arch arm64             # build cho Apple Silicon
+#   ./build_macos.sh --cross                           # cross ra exe Windows (mặc định Chinese)
+#   ./build_macos.sh --cross English --portable        # cross chỉ portable, tiếng Anh
+#   ./build_macos.sh --cross --skip-build --portable   # chỉ đóng gói exe có sẵn
 #
-# Output:
-#   dist/RapidOCRViewer-Portable/               (thư mục portable)
-#   dist/RapidOCRViewer-Portable.zip
-#   dist/RapidOCRViewer-<version>.<arch>.<lang>.dmg   (nếu --dmg/--all)
-#   RapidOCRViewer-<version>.<arch>.<lang>-Setup.exe  (nếu --installer/--all và có makensis)
-#
-# Tác giả: hesphoros (2026), dựa trên build_installer.bat / build_portable.bat
+# Tác giả: hesphoros (2026) + native port (2026)
 # ============================================================
 set -euo pipefail
 
@@ -85,15 +85,22 @@ info "Version: $VERSION (VERSION4=$VERSION4)"
 # ---------- defaults & arg parsing ----------
 LANG_SEL="Chinese"
 ARCH="x64"
-MODE="all"          # portable | dmg | installer | all
+MODE="all"          # portable | dmg | installer | all  (chỉ cho --cross)
 SKIP_BUILD=0
 MOCK=0              # if 1, build without HAVE_TESSERACT
+BUILD_MODE=""       # native | cross | "" (auto)
+CMAKE_ARCH=""       # x86_64 | arm64 | "" (auto)
+NATIVE_BUILD_DIR="build/macos"
 
 for arg in "$@"; do
     case "$arg" in
+        --native) BUILD_MODE="native" ;;
+        --cross) BUILD_MODE="cross" ;;
         Chinese|chinese|zh-CN) LANG_SEL="Chinese" ;;
         English|english|en-US) LANG_SEL="English" ;;
-        x64|x86|arm64|ARM64) ARCH="$arg"; ARCH="x64" ;; # force x64 - Win32 project only supports x64 well on macOS cross
+        x64|x86|arm64|ARM64) ARCH="$arg"; ARCH="x64" ;; # cho cross, giữ x64
+        --arch) warn "--arch cần giá trị: --arch arm64|x86_64|universal"; ;;
+        --arch=*) CMAKE_ARCH="${arg#--arch=}" ;;
         --portable) MODE="portable" ;;
         --dmg) MODE="dmg" ;;
         --installer) MODE="installer" ;;
@@ -102,27 +109,55 @@ for arg in "$@"; do
         --mock) MOCK=1 ;;
         -h|--help)
             cat <<'HELP_EOF'
-Usage: ./build_macos.sh [Chinese|English] [x64] [--portable|--dmg|--installer|--all] [--skip-build] [--mock]
+Usage: ./build_macos.sh [--native|--cross] [options]
 
-  Chinese|English   Ngôn ngữ installer (mặc định: Chinese)
-  --portable        Chỉ tạo portable zip (tương đương build_portable.bat)
-  --dmg             Chỉ tạo DMG (macOS drag & drop)
-  --installer       Chỉ tạo NSIS installer (cần makensis)
-  --all             Tạo tất cả (mặc định)
-  --skip-build      Bỏ qua compile, chỉ đóng gói (dùng khi đã có exe sẵn)
-  --mock            Build mock OCR (không cần Tesseract)
-  -h|--help         Hiện trợ giúp này
+NATIVE (Apple Clang + AppKit, khuyến nghị):
+  ./build_macos.sh --native [--mock] [--arch arm64|x86_64|universal]
+    --native              Build .app native bằng Apple Clang + CMake
+    --mock                Mock OCR (không cần tesseract)
+    --arch <arch>         arm64, x86_64, universal (x86_64;arm64). Mặc định: native arch
+    Ví dụ: ./build_macos.sh --native
+           ./build_macos.sh --native --mock
+           ./build_macos.sh --native --arch arm64
 
-Ví dụ:
-  ./build_macos.sh
-  ./build_macos.sh English --portable
-  ./build_macos.sh --skip-build --portable
+CROSS (MinGW-w64 ra Windows exe, tương thích cũ):
+  ./build_macos.sh --cross [Chinese|English] [x64] [--portable|--dmg|--installer|--all] [--skip-build] [--mock]
+    Chinese|English       Ngôn ngữ installer (mặc định: Chinese)
+    --portable            Chỉ tạo portable zip
+    --dmg                 Chỉ tạo DMG (bọc exe Windows)
+    --installer           Chỉ tạo NSIS installer (cần makensis)
+    --all                 Tạo tất cả (mặc định cho cross)
+    --skip-build          Bỏ qua compile, chỉ đóng gói
+    --mock                Build mock OCR
+    Ví dụ: ./build_macos.sh --cross
+           ./build_macos.sh --cross English --portable
+
+Mặc định: nếu không chỉ định --native/--cross và có clang+cmake trên Darwin -> --native
 HELP_EOF
             exit 0
             ;;
         *) warn "Unknown arg ignored: $arg" ;;
     esac
 done
+# handle --arch <value> (space separated)
+_prev=""
+for arg in "$@"; do
+    if [[ "$_prev" == "--arch" ]]; then
+        CMAKE_ARCH="$arg"
+    fi
+    _prev="$arg"
+done
+
+# auto-detect BUILD_MODE nếu không chỉ định
+if [[ -z "$BUILD_MODE" ]]; then
+    if [[ "$(uname -s)" == "Darwin" ]] && command -v clang >/dev/null 2>&1 && command -v cmake >/dev/null 2>&1; then
+        BUILD_MODE="native"
+        info "Auto-detect: Darwin + clang + cmake -> chọn --native (dùng --cross để build exe Windows)"
+    else
+        BUILD_MODE="cross"
+        info "Auto-detect: chọn --cross (cài clang+cmake trên macOS để dùng --native)"
+    fi
+fi
 
 if [[ "$LANG_SEL" == "Chinese" ]]; then
     LANG_CODE="zh-CN"
@@ -130,7 +165,7 @@ else
     LANG_CODE="en-US"
 fi
 
-info "Config: LANG=$LANG_SEL ($LANG_CODE) ARCH=$ARCH MODE=$MODE SKIP_BUILD=$SKIP_BUILD MOCK=$MOCK"
+info "Config: BUILD_MODE=$BUILD_MODE LANG=$LANG_SEL ($LANG_CODE) ARCH=$ARCH MODE=$MODE SKIP_BUILD=$SKIP_BUILD MOCK=$MOCK CMAKE_ARCH=${CMAKE_ARCH:-auto} NATIVE_DIR=$NATIVE_BUILD_DIR"
 
 # ---------- platform check ----------
 if [[ "$(uname -s)" != "Darwin" ]]; then
@@ -566,8 +601,154 @@ installer_package() {
     ls -lh RapidOCRViewer-*-Setup.exe 2>/dev/null || true
 }
 
+# ---------- NATIVE build (Apple Clang) ----------
+native_build() {
+    info "[1/4] Native macOS build (Apple Clang + CMake + AppKit)"
+    if ! command -v clang >/dev/null 2>&1; then
+        die "clang not found. Cài Xcode CLT: xcode-select --install"
+    fi
+    if ! command -v cmake >/dev/null 2>&1; then
+        die "cmake not found. Cài: brew install cmake"
+    fi
+    info "clang: $(clang --version | head -n1)"
+    info "cmake: $(cmake --version | head -n1)"
+    if command -v brew >/dev/null 2>&1; then
+        ok "brew: $(brew --version | head -n1)"
+    fi
+
+    local cmake_args=()
+    cmake_args+=("-DCMAKE_BUILD_TYPE=Release")
+    cmake_args+=("-DCMAKE_C_COMPILER=clang" "-DCMAKE_CXX_COMPILER=clang++")
+    # Tesseract mock nếu --mock
+    if [[ $MOCK -eq 1 ]]; then
+        cmake_args+=("-DWITH_TESSERACT=OFF")
+        info "Mock OCR: -DWITH_TESSERACT=OFF"
+    fi
+    if [[ -n "$CMAKE_ARCH" ]]; then
+        if [[ "$CMAKE_ARCH" == "universal" ]]; then
+            cmake_args+=("-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64")
+        else
+            cmake_args+=("-DCMAKE_OSX_ARCHITECTURES=$CMAKE_ARCH")
+        fi
+        info "Arch: $CMAKE_ARCH"
+    else
+        info "Arch: native ($(uname -m))"
+    fi
+
+    info "cmake -B $NATIVE_BUILD_DIR ${cmake_args[*]}"
+    cmake -B "$NATIVE_BUILD_DIR" "${cmake_args[@]}"
+
+    info "cmake --build $NATIVE_BUILD_DIR --config Release -j$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"
+    cmake --build "$NATIVE_BUILD_DIR" --config Release -j"$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"
+
+    local APP="$NATIVE_BUILD_DIR/RapidOCRViewer.app"
+    if [[ ! -d "$APP" ]]; then
+        # Xcode generator puts app in Release subdir
+        APP="$NATIVE_BUILD_DIR/Release/RapidOCRViewer.app"
+    fi
+    if [[ -d "$APP" ]]; then
+        ok "Built: $APP"
+        ls -lh "$APP/Contents/MacOS/RapidOCRViewer" 2>/dev/null || true
+        codesign --verify --verbose "$APP" 2>&1 | head -n5 || true
+    else
+        die "Build failed: $APP not found"
+    fi
+
+    # Đóng gói DMG + Zip native
+    native_package
+}
+
+native_package() {
+    info "[3/4] Packaging native .app -> dist/"
+    local APP="$NATIVE_BUILD_DIR/RapidOCRViewer.app"
+    [[ -d "$APP" ]] || APP="$NATIVE_BUILD_DIR/Release/RapidOCRViewer.app"
+    if [[ ! -d "$APP" ]]; then
+        warn "App not found: $APP"
+        return 1
+    fi
+    mkdir -p dist
+    local ZIP="dist/RapidOCRViewer-${VERSION}-macOS.zip"
+    local ZIP_LEGACY="dist/RapidOCRViewer-macOS.zip"
+    local DMG="dist/RapidOCRViewer-${VERSION}-macOS.dmg"
+    local DMG_LEGACY="dist/RapidOCRViewer-macOS.dmg"
+    rm -f "$ZIP" "$ZIP_LEGACY" "$DMG" "$DMG_LEGACY"
+
+    # Zip .app
+    info "Zipping $APP -> $ZIP"
+    if command -v ditto >/dev/null 2>&1; then
+        ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP" && ok "Zip: $ZIP ($(du -h "$ZIP" | cut -f1))" || warn "ditto zip failed"
+        cp -f "$ZIP" "$ZIP_LEGACY" 2>/dev/null || true
+    elif command -v zip >/dev/null 2>&1; then
+        (cd "$(dirname "$APP")" && zip -r -q "$OLDPWD/$ZIP" "$(basename "$APP")") && ok "Zip: $ZIP" || warn "zip failed"
+        cp -f "$ZIP" "$ZIP_LEGACY" 2>/dev/null || true
+    else
+        python3 -c "
+import zipfile, os
+app='$APP'; out='$ZIP'
+with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as z:
+    for root,_,files in os.walk(app):
+        for f in files:
+            full=os.path.join(root,f)
+            arc=os.path.relpath(full, os.path.dirname(app))
+            z.write(full, arc)
+print('python zip ok')
+" && ok "Zip (python): $ZIP" || warn "python zip failed"
+    fi
+
+    # DMG native
+    if command -v hdiutil >/dev/null 2>&1; then
+        local STAGING="/tmp/RapidOCRViewer-native-dmg-$$"
+        rm -rf "$STAGING"
+        mkdir -p "$STAGING"
+        cp -R "$APP" "$STAGING/"
+        ln -s /Applications "$STAGING/Applications" 2>/dev/null || true
+        cat > "$STAGING/README.txt" <<EOF
+RapidOCRViewer $VERSION - macOS native (Apple Clang)
+=====================================================
+Kéo RapidOCRViewer.app vào Applications để cài.
+
+Chạy: open $APP  hoặc  open $STAGING/RapidOCRViewer.app
+Tessdata: $APP/Contents/Resources/tessdata/vie.traineddata
+Yêu cầu: macOS 10.13+, tesseract dylib đã được link (brew tesseract)
+
+Build: $(date) @ $(hostname) ($(uname -m)) AppleClang $(clang --version | head -n1)
+EOF
+        info "hdiutil create $DMG"
+        if hdiutil create -volname "RapidOCRViewer $VERSION" -srcfolder "$STAGING" -ov -format UDBZ "$DMG" 2>&1 | tail -n5; then
+            ok "DMG: $DMG ($(du -h "$DMG" | cut -f1))"
+            cp -f "$DMG" "$DMG_LEGACY" 2>/dev/null || true
+        else
+            warn "hdiutil failed"
+        fi
+        rm -rf "$STAGING"
+    elif command -v create-dmg >/dev/null 2>&1; then
+        create-dmg --volname "RapidOCRViewer $VERSION" "$DMG" "$APP" || warn "create-dmg failed"
+    else
+        warn "No hdiutil/create-dmg, skip DMG (zip is enough)"
+    fi
+
+    ls -lh "$ZIP" "$ZIP_LEGACY" "$DMG" "$DMG_LEGACY" 2>/dev/null || true
+    echo
+    ok "Native outputs:"
+    echo "  App: $APP"
+    ls -lh dist/*.zip dist/*.dmg 2>/dev/null | sed 's/^/    /' || true
+}
+
 # ---------- main ----------
 main() {
+    if [[ "$BUILD_MODE" == "native" ]]; then
+        if [[ $SKIP_BUILD -eq 1 ]]; then
+            info "--skip-build + --native -> chỉ packaging"
+            native_package
+        else
+            native_build
+        fi
+        echo
+        ok "Native build finished. Chạy: open $NATIVE_BUILD_DIR/RapidOCRViewer.app  (hoặc open $NATIVE_BUILD_DIR/Release/RapidOCRViewer.app)"
+        return 0
+    fi
+
+    # cross mode (cũ)
     check_deps
     do_build
 
@@ -584,16 +765,17 @@ main() {
             ;;
     esac
 
-    info "[4/4] Done. Outputs:"
+    info "[4/4] Done. Outputs (CROSS):"
     echo "  Portable folder: dist/RapidOCRViewer-Portable/"
     ls -lh dist/*.zip 2>/dev/null | sed 's/^/    /' || echo "    (no zip)"
     ls -lh dist/*.dmg 2>/dev/null | sed 's/^/    /' || echo "    (no dmg - optional)"
     ls -lh RapidOCRViewer-*-Setup.exe 2>/dev/null | sed 's/^/    /' || echo "    (no installer - optional, need makensis)"
 
     echo
-    ok "Build script finished. See dist/ and repo root for outputs."
+    ok "Cross build finished. See dist/ and repo root for outputs."
     echo
-    info "Tip: To run the Windows exe on macOS: brew install --cask wine-stable && wine vs2026/x64/Release/RapidOCRViewer.exe"
+    info "Tip cross: brew install --cask wine-stable && wine vs2026/x64/Release/RapidOCRViewer.exe"
+    info "Tip native: ./build_macos.sh --native  (Apple Clang, chạy thật trên macOS)"
 }
 
 main "$@"

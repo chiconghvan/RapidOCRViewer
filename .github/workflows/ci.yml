@@ -78,9 +78,63 @@ jobs:
           if [ ! -f "vs2026/x64/Release/RapidOCRViewer.exe" ]; then
             echo "fake exe for CI" > vs2026/x64/Release/RapidOCRViewer.exe
           fi
-          ./build_macos.sh --skip-build --portable
+          ./build_macos.sh --cross --skip-build --portable
           ls -lh dist/ || true
           test -d dist/RapidOCRViewer-Portable
+
+  build-macos-native:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Apple Clang / CMake
+        shell: bash
+        run: |
+          clang --version
+          cmake --version
+          xcode-select -p || true
+          sw_vers
+
+      - name: Install deps (brew)
+        shell: bash
+        run: |
+          brew update
+          # tesseract + leptonica cho OCR thật; nếu muốn CI nhanh có thể bỏ và build mock
+          brew install tesseract leptonica pkg-config || brew install tesseract leptonica pkg-config
+          brew list --versions tesseract leptonica || true
+          pkg-config --modversion tesseract 2>/dev/null || echo "pkg-config tesseract not found (fallback brew path sẽ dùng)"
+          pkg-config --modversion lept 2>/dev/null || echo "pkg-config lept not found"
+
+      - name: Build native .app (Apple Clang + CMake)
+        shell: bash
+        run: |
+          set -e
+          chmod +x build_macos.sh
+          ./build_macos.sh --native
+          ls -lh build/macos/RapidOCRViewer.app/Contents/MacOS/ 2>/dev/null || ls -lh build/macos/Release/RapidOCRViewer.app/Contents/MacOS/ || true
+          test -d build/macos/RapidOCRViewer.app || test -d build/macos/Release/RapidOCRViewer.app
+          ls -lh dist/*.zip dist/*.dmg 2>/dev/null || true
+
+      - name: Build native mock (no tesseract) - sanity
+        shell: bash
+        run: |
+          set -e
+          cmake -B build/macos-mock -DCMAKE_BUILD_TYPE=Release -DWITH_TESSERACT=OFF
+          cmake --build build/macos-mock -j$(sysctl -n hw.ncpu)
+          ls -lh build/macos-mock/RapidOCRViewer.app/Contents/MacOS/ || ls -lh build/macos-mock/Release/RapidOCRViewer.app/Contents/MacOS/ || true
+
+      - name: Upload native app
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-native-app
+          retention-days: 7
+          path: |
+            build/macos/RapidOCRViewer.app
+            build/macos/Release/RapidOCRViewer.app
+            build/macos-mock/RapidOCRViewer.app
+            build/macos-mock/Release/RapidOCRViewer.app
+            dist/*.zip
+            dist/*.dmg
 
   package-linux-check:
     runs-on: ubuntu-latest
@@ -105,4 +159,5 @@ jobs:
           ./build_linux.sh --skip-build --portable
           ls -lh dist/ || true
           test -d dist/RapidOCRViewer-Portable
+          ./build_linux.sh --help
 

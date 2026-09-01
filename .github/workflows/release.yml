@@ -197,8 +197,59 @@ jobs:
             tessdata/vie.traineddata
 
   # ============================================================
-  # macOS: đóng gói DMG (cross-compile hoặc reuse exe từ Windows)
-  # RapidOCRViewer là Win32 -> DMG chứa portable Windows + Wine note
+  # macOS NATIVE: Apple Clang + AppKit + CMake -> .app thật
+  # Chạy song song với cross DMG để vẫn có cả 2 loại artifact
+  # ============================================================
+  build-macos-native:
+    runs-on: macos-latest
+    needs: build-windows
+    outputs:
+      version: ${{ needs.build-windows.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        shell: bash
+        run: |
+          clang --version
+          cmake --version
+          sw_vers
+          xcode-select -p || true
+
+      - name: Install deps (brew)
+        shell: bash
+        run: |
+          brew update
+          brew install tesseract leptonica pkg-config create-dmg || brew install tesseract leptonica pkg-config || true
+          brew list --versions tesseract leptonica || true
+          clang --version
+          cmake --version
+
+      - name: Build native .app (Apple Clang)
+        shell: bash
+        run: |
+          set -e
+          chmod +x build_macos.sh
+          ./build_macos.sh --native
+          ls -lh build/macos/RapidOCRViewer.app 2>/dev/null || ls -lh build/macos/Release/RapidOCRViewer.app || true
+          ls -lh dist/*.zip dist/*.dmg 2>/dev/null || true
+
+      - name: Upload macOS native artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-native-artifacts
+          retention-days: 7
+          path: |
+            build/macos/RapidOCRViewer.app
+            build/macos/Release/RapidOCRViewer.app
+            dist/*-macOS.zip
+            dist/*-macOS.dmg
+            dist/RapidOCRViewer-macOS.zip
+            dist/RapidOCRViewer-macOS.dmg
+
+  # ============================================================
+  # macOS CROSS: đóng gói DMG bọc Windows exe (Wine) - giữ tương thích cũ
   # ============================================================
   build-macos:
     runs-on: macos-latest
@@ -255,10 +306,10 @@ jobs:
           set -e
           chmod +x build_macos.sh
           # build both langs via --skip-build (reuse Windows exe)
-          ./build_macos.sh Chinese --skip-build --dmg
-          ./build_macos.sh English --skip-build --dmg
+          ./build_macos.sh --cross Chinese --skip-build --dmg
+          ./build_macos.sh --cross English --skip-build --dmg
           # also ensure portable zips exist for macOS (reuse)
-          ./build_macos.sh Chinese --skip-build --portable || true
+          ./build_macos.sh --cross Chinese --skip-build --portable || true
           ls -lh dist/ || true
           ls -lh *.dmg 2>/dev/null || true
 
@@ -336,7 +387,7 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    needs: [build-windows, build-macos, build-linux]
+    needs: [build-windows, build-macos, build-macos-native, build-linux]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -358,8 +409,10 @@ jobs:
           mkdir -p release_assets
           # Windows
           find _artifacts/windows-artifacts -type f \( -name "*.zip" -o -name "*.exe" \) -exec cp -f {} release_assets/ \; 2>/dev/null || true
-          # macOS
+          # macOS cross (Wine)
           find _artifacts/macos-artifacts -type f \( -name "*.dmg" -o -name "*.zip" \) -exec cp -f {} release_assets/ \; 2>/dev/null || true
+          # macOS native (Apple Clang .app)
+          find _artifacts/macos-native-artifacts -type f \( -name "*.dmg" -o -name "*.zip" \) -exec cp -f {} release_assets/ \; 2>/dev/null || true
           # Linux
           find _artifacts/linux-artifacts -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec cp -f {} release_assets/ \; 2>/dev/null || true
           # Deduplicate: nếu có nhiều file cùng tên từ nhiều job, giữ 1

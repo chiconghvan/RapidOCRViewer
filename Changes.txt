@@ -1,3 +1,9 @@
+Thứ Ba, 02 Tháng 09 2026: Phiên bản 1.1.2 (v1.1.2)
+	- Build native macOS bằng Apple Clang + AppKit (CMake) — ra RapidOCRViewer.app thật, không cần Wine
+	- Thêm CMakeLists.txt + macos/*.mm (ViewerView/ViewerWindow/OCRBridge/OCRPanel) tái sử dụng Tesseract/Leptonica qua brew
+	- build_macos.sh hỗ trợ dual-mode: --native (Apple Clang) và --cross (MinGW Windows), auto-detect trên Darwin
+	- CI/CD GitHub Actions build native trên macos-latest (clang/cmake/brew tesseract) và release kèm DMG/ZIP native
+
 Thứ Ba, 01 Tháng 09 2026: Phiên bản 1.1.1 (v1.1.1)
 	- Thêm thanh cuộn ngang/dọc cho ảnh khi zoom vượt quá vùng hiển thị — tự động ẩn khi không cần
 	- Thanh cuộn ngang đặt ngay phía trên thanh điều hướng, thanh cuộn dọc ở mép phải vùng ảnh (không che bảng OCR)
