@@ -17,9 +17,17 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgJsonGlob: 'vcpkg.json'
+        shell: pwsh
+        run: |
+          if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = "C:\vcpkg" }
+          Write-Host "VCPKG_ROOT=$env:VCPKG_ROOT"
+          & "$env:VCPKG_ROOT\vcpkg.exe" version
+          & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows --x-manifest-root=. --x-install-root="$env:VCPKG_ROOT\installed"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Manifest install failed, trying direct install..."
+            & "$env:VCPKG_ROOT\vcpkg.exe" install tesseract[core]:x64-windows leptonica:x64-windows --triplet x64-windows
+            if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed" }
+          }
 
       - name: Build Release x64
         shell: pwsh
