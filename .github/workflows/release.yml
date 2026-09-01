@@ -47,12 +47,18 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $major = (Select-String -Path src/version.h -Pattern 'VERSION_MAJOR').Line.Split()[2]
-          $minor = (Select-String -Path src/version.h -Pattern 'VERSION_MINOR').Line.Split()[2]
-          $rev   = (Select-String -Path src/version.h -Pattern 'VERSION_REVISION').Line.Split()[2]
-          $ver = "$major.$minor.$rev"
-          $ver4 = "$ver.0"
-          if ("${{ inputs.version }}" -ne "") { $ver = "${{ inputs.version }}"; $ver4 = "$ver.0" }
+          $major = (Select-String -Path src/version.h -Pattern 'VERSION_MAJOR').Line.Split()[2].Trim()
+          $minor = (Select-String -Path src/version.h -Pattern 'VERSION_MINOR').Line.Split()[2].Trim()
+          $rev   = (Select-String -Path src/version.h -Pattern 'VERSION_REVISION').Line.Split()[2].Trim()
+          # Strip any lingering \r (CRLF)
+          $major = $major.Trim().Trim("`r","`n")
+          $minor = $minor.Trim().Trim("`r","`n")
+          $rev   = $rev.Trim().Trim("`r","`n")
+          $ver = "$major.$minor.$rev".Trim()
+          $ver4 = "$ver.0".Trim()
+          if ("${{ inputs.version }}" -ne "") { $ver = "${{ inputs.version }}".Trim(); $ver4 = "$ver.0".Trim() }
+          $ver = $ver -replace "`r","" -replace "`n",""
+          $ver4 = $ver4 -replace "`r","" -replace "`n",""
           echo "version=$ver" >> $env:GITHUB_OUTPUT
           echo "version4=$ver4" >> $env:GITHUB_OUTPUT
           echo "Version: $ver ($ver4)"

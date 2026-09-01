@@ -56,17 +56,18 @@ cd "$REPO"
 
 parse_version() {
     local vy ma mi rv
-    vy=$(grep -E '#define VERSION_YEAR' src/version.h | awk '{print $3}')
-    ma=$(grep -E '#define VERSION_MAJOR' src/version.h | awk '{print $3}')
-    mi=$(grep -E '#define VERSION_MINOR' src/version.h | awk '{print $3}')
-    rv=$(grep -E '#define VERSION_REVISION' src/version.h | awk '{print $3}')
+    vy=$(grep -E '#define VERSION_YEAR' src/version.h | awk '{print $3}' | tr -d '\r')
+    ma=$(grep -E '#define VERSION_MAJOR' src/version.h | awk '{print $3}' | tr -d '\r')
+    mi=$(grep -E '#define VERSION_MINOR' src/version.h | awk '{print $3}' | tr -d '\r')
+    rv=$(grep -E '#define VERSION_REVISION' src/version.h | awk '{print $3}' | tr -d '\r')
     if [[ -n "$vy" && "$vy" != "2026" ]]; then
-        echo "${vy}.${ma}.${mi}.${rv}"
+        echo "${vy}.${ma}.${mi}.${rv}" | tr -d '\r'
     else
-        echo "${ma}.${mi}.${rv}"
+        echo "${ma}.${mi}.${rv}" | tr -d '\r'
     fi
 }
-VERSION_SHORT=$(parse_version)
+VERSION_SHORT=$(parse_version | tr -d '\r')
+VERSION_SHORT=$(echo "$VERSION_SHORT" | tr -d '\r')
 if [[ "$VERSION_SHORT" == *.*.*.* ]]; then
     VERSION="$VERSION_SHORT"
     VERSION4="$VERSION_SHORT"
@@ -74,6 +75,9 @@ else
     VERSION="$VERSION_SHORT"
     VERSION4="${VERSION_SHORT}.0"
 fi
+# final sanitize
+VERSION=$(echo "$VERSION" | tr -d '\r')
+VERSION4=$(echo "$VERSION4" | tr -d '\r')
 info "Version: $VERSION (VERSION4=$VERSION4)"
 
 LANG_SEL="Chinese"

@@ -55,19 +55,22 @@ cd "$REPO"
 # ---------- parse version.h ----------
 parse_version() {
     local vy ma mi rv
-    vy=$(grep -E '#define VERSION_YEAR' src/version.h | awk '{print $3}')
-    ma=$(grep -E '#define VERSION_MAJOR' src/version.h | awk '{print $3}')
-    mi=$(grep -E '#define VERSION_MINOR' src/version.h | awk '{print $3}')
-    rv=$(grep -E '#define VERSION_REVISION' src/version.h | awk '{print $3}')
+    vy=$(grep -E '#define VERSION_YEAR' src/version.h | awk '{print $3}' | tr -d '\r')
+    ma=$(grep -E '#define VERSION_MAJOR' src/version.h | awk '{print $3}' | tr -d '\r')
+    mi=$(grep -E '#define VERSION_MINOR' src/version.h | awk '{print $3}' | tr -d '\r')
+    rv=$(grep -E '#define VERSION_REVISION' src/version.h | awk '{print $3}' | tr -d '\r')
     # fallback if YEAR not used in tag
     if [[ -n "$vy" && "$vy" != "2026" ]]; then
-        echo "${vy}.${ma}.${mi}.${rv}"
+        echo "${vy}.${ma}.${mi}.${rv}" | tr -d '\r'
     else
-        echo "${ma}.${mi}.${rv}"
+        echo "${ma}.${mi}.${rv}" | tr -d '\r'
         # full 4-part for NSIS compatibility
         # e.g. 1.1.1 -> 1.1.1.0
     fi
 }
+VERSION_SHORT=$(parse_version | tr -d '\r')
+# also strip any lingering \r
+VERSION_SHORT=$(echo "$VERSION_SHORT" | tr -d '\r')
 VERSION_SHORT=$(parse_version)
 # NSIS expects VERSION like 1.1.1 and VERSION4 like 1.1.1.0
 if [[ "$VERSION_SHORT" == *.*.*.* ]]; then

@@ -1,7 +1,19 @@
-# Keep LF for shell scripts (critical for macOS/Linux runners)
+# Normalize line endings - critical for cross-platform CI (fixes \r in version parsing)
+* text=auto
+# Source and scripts must be LF (macOS/Linux runners fail on CRLF)
 *.sh text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.h text eol=lf
+*.c text eol=lf
+*.cpp text eol=lf
+*.rc text eol=lf
+*.nsi text eol=lf
+*.nsh text eol=lf
+*.ini text eol=lf
 # Windows batch keep CRLF
 *.bat text eol=crlf
 # Binary
@@ -11,3 +23,6 @@
 *.ico binary
 *.png binary
 *.gif binary
+*.zip binary
+*.tar.gz binary
+*.dmg binary
