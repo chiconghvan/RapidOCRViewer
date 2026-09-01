@@ -66,6 +66,7 @@ jobs:
           Write-Host "Setting up vcpkg..."
           if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = "C:\vcpkg" }
           Write-Host "VCPKG_ROOT=$env:VCPKG_ROOT"
+          echo "VCPKG_ROOT=$env:VCPKG_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           & "$env:VCPKG_ROOT\vcpkg.exe" version
           # Install from manifest (vcpkg.json) - uses builtin-baseline SHA
           & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows --x-manifest-root=. --x-install-root="$env:VCPKG_ROOT\installed"
@@ -74,8 +75,16 @@ jobs:
             & "$env:VCPKG_ROOT\vcpkg.exe" install tesseract[core]:x64-windows leptonica:x64-windows --triplet x64-windows
             if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed" }
           }
+          # Integrate for MSBuild (auto-link Tesseract/Leptonica) - must be after install
+          & "$env:VCPKG_ROOT\vcpkg.exe" integrate install
           Write-Host "vcpkg installed:"
-          Get-ChildItem "$env:VCPKG_ROOT\installed\x64-windows\bin" | Select-Object -First 10 | Format-Table Name
+          Get-ChildItem "$env:VCPKG_ROOT\installed\x64-windows\lib" | Select-Object -First 30 | Format-Table Name, Length
+          Get-ChildItem "$env:VCPKG_ROOT\installed\x64-windows\bin" | Select-Object -First 15 | Format-Table Name, Length
+          # Verify tesseract lib exists
+          if (-not (Test-Path "$env:VCPKG_ROOT\installed\x64-windows\lib\tesseract*.lib")) {
+            Write-Host "WARNING: tesseract lib not found, listing libs:"
+            Get-ChildItem "$env:VCPKG_ROOT\installed\x64-windows\lib\*.lib" | Format-Table Name
+          }
 
       - name: Install NSIS
         shell: pwsh
@@ -90,10 +99,31 @@ jobs:
         run: |
           Write-Host "VCPKG_ROOT=$env:VCPKG_ROOT"
           if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = "C:\vcpkg" }
-          Write-Host "Building with MSBuild..."
+          Write-Host "Building with MSBuild (try 1: auto-link via vcpkg integrate)..."
           msbuild vs2026\RapidOCRViewer.vcxproj /p:Configuration=Release /p:Platform=x64 /m /v:m
-          if ($LASTEXITCODE -ne 0) { throw "Build failed" }
-          if (-not (Test-Path "vs2026\x64\Release\RapidOCRViewer.exe")) { throw "Exe not found" }
+          if ($LASTEXITCODE -eq 0 -and (Test-Path "vs2026\x64\Release\RapidOCRViewer.exe")) {
+            Write-Host "Build succeeded on first try"
+            Get-ChildItem vs2026\x64\Release | Format-Table Name, Length
+            exit 0
+          }
+          Write-Host "First build failed (likely LNK2019 tesseract), trying explicit link..."
+          # Find tesseract/leptonica libs
+          $tessLib = Get-ChildItem "$env:VCPKG_ROOT\installed\x64-windows\lib\tesseract*.lib" | Select-Object -First 1 -ExpandProperty Name
+          $leptLib = Get-ChildItem "$env:VCPKG_ROOT\installed\x64-windows\lib\leptonica*.lib" | Select-Object -First 1 -ExpandProperty Name
+          if (-not $tessLib) { $tessLib = "tesseract.lib" }
+          if (-not $leptLib) { $leptLib = "leptonica.lib" }
+          Write-Host "Using libs: $tessLib $leptLib"
+          # Collect all vcpkg libs for fallback
+          $allLibs = Get-ChildItem "$env:VCPKG_ROOT\installed\x64-windows\lib\*.lib" | ForEach-Object { $_.Name } | Join-String -Separator ";"
+          Write-Host "All libs: $allLibs"
+          # Try with explicit AdditionalDependencies
+          msbuild vs2026\RapidOCRViewer.vcxproj /p:Configuration=Release /p:Platform=x64 /m /v:m /p:AdditionalDependencies="$tessLib;$leptLib;ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Second try failed, trying with all libs..."
+            msbuild vs2026\RapidOCRViewer.vcxproj /p:Configuration=Release /p:Platform=x64 /m /v:m /p:AdditionalDependencies="$allLibs;ComCtl32.lib;shlwapi.lib;"
+          }
+          if ($LASTEXITCODE -ne 0) { throw "Build failed after fallback" }
+          if (-not (Test-Path "vs2026\x64\Release\RapidOCRViewer.exe")) { throw "Exe not found after fallback" }
           Get-ChildItem vs2026\x64\Release | Format-Table Name, Length
 
       - name: Build Portable
