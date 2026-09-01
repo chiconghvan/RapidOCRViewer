@@ -134,7 +134,7 @@ Page custom InstallOptions2
 !insertmacro GetOptions
 
 ; Version Info
-VIProductVersion "${VERSION}${BETAVERSION}"
+VIProductVersion "${VERSION4}${BETAVERSION}"
 
 ; don't localize these:
 VIAddVersionKey "ProductName" "RapidOCRViewer"
@@ -144,8 +144,8 @@ VIAddVersionKey "LegalTrademarks" ""
 VIAddVersionKey "LegalCopyright" "Copyright (c) 2025 David Carpenter"
 VIAddVersionKey "FileDescription" "RapidOCRViewer Setup"
 
-VIAddVersionKey "FileVersion" "${VERSION}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}"
-VIAddVersionKey "ProductVersion" "${VERSION}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}"
+VIAddVersionKey "FileVersion" "${VERSION4}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}"
+VIAddVersionKey "ProductVersion" "${VERSION4}${BETAVERSION}.${TARGETMACHINE}.${LANG_CODE}"
 
 Function .onInit
 
