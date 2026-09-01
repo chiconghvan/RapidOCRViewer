@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main, dev]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build-windows-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+
+      - name: Build Release x64
+        shell: pwsh
+        run: |
+          msbuild vs2026\RapidOCRViewer.vcxproj /p:Configuration=Release /p:Platform=x64 /m /v:m
+          if ($LASTEXITCODE -ne 0) { throw "Build failed" }
+
+      - name: Verify portable packaging (no installer)
+        shell: cmd
+        run: |
+          call build_portable.bat
+          dir dist
+          if not exist dist\RapidOCRViewer-Portable\RapidOCRViewer.exe exit /b 1
+
+  package-macos-check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check build_macos.sh syntax
+        shell: bash
+        run: |
+          bash -n build_macos.sh
+          chmod +x build_macos.sh
+          ./build_macos.sh --help
+
+      - name: Test portable packaging (mock, no real compile)
+        shell: bash
+        run: |
+          # Dùng vs2026/x64/Release hiện có nếu có, hoặc tạo placeholder
+          mkdir -p vs2026/x64/Release/tessdata
+          [ -f "tessdata/vie.traineddata" ] && cp -f tessdata/vie.traineddata vs2026/x64/Release/tessdata/ || true
+          # Tạo fake exe nếu chưa có để test packaging
+          if [ ! -f "vs2026/x64/Release/RapidOCRViewer.exe" ]; then
+            echo "fake exe for CI" > vs2026/x64/Release/RapidOCRViewer.exe
+          fi
+          ./build_macos.sh --skip-build --portable
+          ls -lh dist/ || true
+          test -d dist/RapidOCRViewer-Portable
+
+  package-linux-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check build_linux.sh syntax
+        shell: bash
+        run: |
+          bash -n build_linux.sh
+          chmod +x build_linux.sh
+          ./build_linux.sh --help
+
+      - name: Test portable packaging (mock)
+        shell: bash
+        run: |
+          mkdir -p vs2026/x64/Release/tessdata
+          [ -f "tessdata/vie.traineddata" ] && cp -f tessdata/vie.traineddata vs2026/x64/Release/tessdata/ || true
+          if [ ! -f "vs2026/x64/Release/RapidOCRViewer.exe" ]; then
+            echo "fake exe for CI" > vs2026/x64/Release/RapidOCRViewer.exe
+          fi
+          ./build_linux.sh --skip-build --portable
+          ls -lh dist/ || true
+          test -d dist/RapidOCRViewer-Portable
+
