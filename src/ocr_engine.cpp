@@ -19,6 +19,13 @@ int ocr_is_available(void) { return g_available; }
 #include <leptonica/allheaders.h>
 #include <mutex>
 
+// Free a text buffer returned by Tesseract using the DLL's own CRT.
+// GetUTF8Text() allocates its result inside tesseract55.dll (release CRT);
+// freeing it with the app's CRT (e.g. debug MTd msvcp140d.dll) crashes with
+// "debug_heap.cpp: is_block_type_valid" heap assertion. TessDeleteText runs
+// inside the DLL so the matching CRT is used.
+extern "C" void TessDeleteText(const char* text);
+
 static tesseract::TessBaseAPI *g_api = nullptr;
 static std::mutex g_api_mutex;
 static wchar_t g_tessdata_dir[MAX_PATH] = {0};
@@ -166,9 +173,9 @@ wchar_t* ocr_recognize_hbitmap(HBITMAP hbitmap, RECT srcRect) {
     }
 
     g_api->SetImage(pixToUse);
-    // PSM 6 = Assume a single uniform block of text (good for selection), 3 = auto
-    // Use 6 for cropped region to be faster
-    g_api->SetPageSegMode(tesseract::PSM_SINGLE_BLOCK);
+    // PSM 3 = Auto page segmentation (detects lines and paragraphs, inserts newlines)
+    // PSM 6 = SINGLE_BLOCK concatenates all lines without newlines
+    g_api->SetPageSegMode(tesseract::PSM_AUTO);
 
     char *utf8 = g_api->GetUTF8Text();
     if (pixToUse != pix) pixDestroy(&pixToUse);
@@ -182,7 +189,7 @@ wchar_t* ocr_recognize_hbitmap(HBITMAP hbitmap, RECT srcRect) {
     int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, NULL, 0);
     wchar_t *wstr = (wchar_t*)malloc(wlen * sizeof(wchar_t));
     if (wstr) MultiByteToWideChar(CP_UTF8, 0, utf8, -1, wstr, wlen);
-    delete[] utf8;
+    TessDeleteText(utf8); // free inside tesseract55.dll (matching CRT)
     return wstr;
 }
 

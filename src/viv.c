@@ -1423,9 +1423,6 @@ static void _viv_ocr_toggle(void) {
     _viv_ocr_mode = !_viv_ocr_mode;
     if (_viv_ocr_mode) {
         // entering OCR mode: show panel placeholder if not visible? Keep hidden until first ocr
-        // Change cursor hint via status
-        wchar_t *tip = L"Fast OCR: kéo để chọn vùng";
-        _viv_status_set_temp_text(tip);
     } else {
         _viv_ocr_selecting = 0;
         _viv_doing = _VIV_DOING_NOTHING;
@@ -4755,14 +4752,6 @@ debug_printf("PAINT %d %d %d\n",_viv_frame_position,rw,rh);
 				if (_viv_ocr_selecting || _viv_ocr_mode) {
 					RECT area; _viv_ocr_get_image_area(&area);
 					_viv_ocr_draw_selection(ps.hdc, area);
-					// draw mode indicator
-					if (_viv_ocr_mode && !_viv_ocr_selecting) {
-						wchar_t *txt = L"Fast OCR: kéo để chọn vùng  (Ctrl+Shift+O để thoát)";
-						SetBkMode(ps.hdc, TRANSPARENT);
-						SetTextColor(ps.hdc, RGB(0,120,215));
-						RECT tr = { area.left+6, area.top+6, area.right-6, area.top+22 };
-						DrawTextW(ps.hdc, txt, -1, &tr, DT_LEFT|DT_SINGLELINE|DT_NOPREFIX);
-					}
 				}
 				
 				DeleteObject(update_hrgn);
