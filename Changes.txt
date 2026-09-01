@@ -1,3 +1,8 @@
+Thứ Ba, 01 Tháng 09 2026: Phiên bản 1.0.1 (v1.0.1)
+	- Mouse wheel action: thêm tùy chọn "Scroll Image" (cuộn ảnh bằng bánh xe chuột)
+	- Đổi tên các control ID trong dialog cho rõ ràng hơn
+	- Navigation sort mặc định theo thứ tự tăng dần
+
 Thứ Ba, 01 Tháng 09 2026: Phiên bản 1.0.0.0 (v1.0.0)
 	🎉 **Phát hành chính thức RapidOCRViewer!**
 	- Thay đổi tên dự án từ voidImageViewer → RapidOCRViewer

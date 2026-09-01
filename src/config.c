@@ -41,7 +41,7 @@ BYTE config_allow_shrinking = 1; // prevent resizing an image below 100%
 BYTE config_shrink_blit_mode = CONFIG_SHRINK_BLIT_MODE_HALFTONE; // shrink filter
 BYTE config_mag_filter = CONFIG_MAG_FILTER_COLORONCOLOR; // magnify filter
 BYTE config_nav_sort = CONFIG_NAV_SORT_DATE_MODIFIED; // current navigation sort.
-BYTE config_nav_sort_ascending = 0; // sort navigation ascending or descending.
+BYTE config_nav_sort_ascending = 1; // sort navigation ascending or descending.
 BYTE config_keep_aspect_ratio = 1; // stretch images with the original aspect ratio.
 BYTE config_fill_window = 0; // stretch the image to fill the window
 BYTE config_fullscreen_fill_window = 1; // same as fill_window, except this setting is used when we are fullscreen
@@ -57,8 +57,8 @@ BYTE config_show_status = 1;
 BYTE config_show_controls = 1;
 BYTE config_prevent_sleep = 1;
 BYTE config_loop_animations_once = 1;
-BYTE config_mouse_wheel_action = 0; // 0 = zoom, 1 = next/prev, 2=prev/next
-BYTE config_ctrl_mouse_wheel_action = 0; // 0 = zoom, 1 = next/prev, 2=prev/next
+BYTE config_mouse_wheel_action = 3; // 0 = zoom, 1 = next/prev, 2=prev/next, 3=scroll image
+BYTE config_ctrl_mouse_wheel_action = 0; // 0 = zoom, 1 = next/prev, 2=prev/next, 3=scroll image
 BYTE config_left_click_action = 0; // 0 = scroll, 1 = play/pause slideshow, 2 = play/pause animation, 3=zoom in, 4=next, 5=1:1 scroll, 6=move-window
 BYTE config_right_click_action = 0; // 0 = context menu, 1=zoom out, 2=prev, 
 BYTE config_xbutton_action = 2; // 1=zoom, 2=next

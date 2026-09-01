@@ -107,6 +107,10 @@
 // maintain correct image aspect ratio when window is clipped on auto size.
 //
 // DONE:
+// 1.0.1
+// *mouse wheel action: added "Scroll Image" option.
+// *renamed dialog control IDs to descriptive names.
+// *navigation sort defaults to ascending.
 // 1.0.0.0
 // *deleting the last image in a playlist does not clear the image.
 // *added xbutton action
@@ -5626,7 +5630,7 @@ static int _viv_init(int nCmdShow)
 		}
 	}
 	
-	debug_printf("viv %d.%d.%d.%d%s %s\n",VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,VERSION_BUILD,VERSION_TYPE,VERSION_TARGET_MACHINE);
+	debug_printf("viv %d.%d.%d%s %s\n",VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,VERSION_TYPE,VERSION_TARGET_MACHINE);
 	
 	os_hinstance = GetModuleHandle(0);
 	
@@ -8684,6 +8688,7 @@ static INT_PTR CALLBACK _viv_options_controls_proc(HWND hwnd,UINT msg,WPARAM wPa
 			os_ComboBox_AddString_localization_id(hwnd,IDC_MOUSEWHEELACTION_COMBOBOX,LOCALIZATION_ID_OPTIONS_ACTION_ZOOM_COMBOBOXITEM);
 			os_ComboBox_AddString_localization_id(hwnd,IDC_MOUSEWHEELACTION_COMBOBOX,LOCALIZATION_ID_OPTIONS_ACTION_NEXT_PREV_COMBOBOXITEM);
 			os_ComboBox_AddString_localization_id(hwnd,IDC_MOUSEWHEELACTION_COMBOBOX,LOCALIZATION_ID_OPTIONS_ACTION_PREV_NEXT_COMBOBOXITEM);
+			os_ComboBox_AddString_localization_id(hwnd,IDC_MOUSEWHEELACTION_COMBOBOX,LOCALIZATION_ID_OPTIONS_ACTION_SCROLL_IMAGE_COMBOBOXITEM);
 			ComboBox_SetCurSel(GetDlgItem(hwnd,IDC_MOUSEWHEELACTION_COMBOBOX),config_mouse_wheel_action);
 
 			os_SetDlgItemText_localization_id(hwnd,IDC_COMMANDS_STATIC,LOCALIZATION_ID_COMMANDS_STATIC);
@@ -10216,7 +10221,7 @@ static INT_PTR CALLBACK _viv_about_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			SetWindowText(hwnd,version_wbuf);
 			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTTITLE,LOCALIZATION_ID_APP_NAME);
 			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTRAPIDOCRVIEWER,LOCALIZATION_ID_APP_NAME);
-			string_printf(version_wbuf,"%d.%d.%d.%d%s %s",VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,VERSION_BUILD,VERSION_TYPE,VERSION_TARGET_MACHINE);
+			string_printf(version_wbuf,"%d.%d.%d%s %s",VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,VERSION_TYPE,VERSION_TARGET_MACHINE);
 			SetDlgItemText(hwnd,IDC_ABOUTVERSION,version_wbuf);
 			string_printf(version_wbuf,localization_get_string(LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT),VERSION_YEAR);
 			SetDlgItemText(hwnd,IDC_ABOUTCOPYRIGHT,version_wbuf);
@@ -14558,6 +14563,14 @@ static void _viv_do_mousewheel_action(int action,int delta,int x,int y)
 		{
 			_viv_next(1,1,0,0);
 		}
+	}
+	else
+	if (action == 3)
+	{
+		// scroll image vertically
+		// delta > 0 = wheel up, delta < 0 = wheel down
+		int scroll_amount = (delta / WHEEL_DELTA) * 60;
+		_viv_view_scroll(0, scroll_amount);
 	}
 }
 
