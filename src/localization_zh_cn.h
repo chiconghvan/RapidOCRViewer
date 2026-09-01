@@ -303,6 +303,7 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"OCR 结果",
 	"复制(&C)",
 	"清除(&L)",
+	"合并段落(&M)",
 	"识别中...",
 	"无图像。",
 	"OCR 失败。",

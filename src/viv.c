@@ -107,6 +107,9 @@
 // maintain correct image aspect ratio when window is clipped on auto size.
 //
 // DONE:
+// 1.1.0
+// *OCR: added "Merge paragraphs" option (default on); merges lines within a
+//   paragraph into flowing text with blank lines between paragraphs.
 // 1.0.1
 // *mouse wheel action: added "Scroll Image" option.
 // *renamed dialog control IDs to descriptive names.
@@ -1330,7 +1333,7 @@ static void _viv_ocr_draw_selection(HDC hdc, RECT imageArea) {
     // draw crosshair info small
 }
 
-typedef struct { RECT srcRect; HBITMAP hbitmap; HWND hwnd; } ocr_thread_param_t;
+typedef struct { RECT srcRect; HBITMAP hbitmap; HWND hwnd; BYTE paragraph; } ocr_thread_param_t;
 
 static void _viv_ocr_run(RECT srcRect) {
     if (_viv_ocr_busy) return;
@@ -1362,6 +1365,7 @@ static void _viv_ocr_run(RECT srcRect) {
     p->srcRect = srcRect;
     p->hbitmap = srcBmp;
     p->hwnd = _viv_hwnd;
+    p->paragraph = ocr_panel_get_paragraph();
     _viv_ocr_busy = 1;
     DWORD tid;
     _viv_ocr_thread = CreateThread(NULL,0,_viv_ocr_thread_proc,p,0,&tid);
@@ -1376,8 +1380,10 @@ static DWORD WINAPI _viv_ocr_thread_proc(LPVOID param) {
     RECT rc = p->srcRect;
     HBITMAP hb = p->hbitmap;
     HWND hwnd = p->hwnd;
+    BYTE paragraph = p->paragraph;
     mem_free(p);
-    wchar_t *res = ocr_recognize_hbitmap(hb, rc);
+    wchar_t *res = paragraph ? ocr_recognize_hbitmap_paragraphs(hb, rc)
+                            : ocr_recognize_hbitmap(hb, rc);
     if (res) {
         // post to UI thread; allocate copy for message
         size_t len = wcslen(res)+1;
@@ -2867,6 +2873,14 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 			break;
 		case VIV_ID_OCR_CLEAR:
 			ocr_panel_clear();
+			break;
+		case VIV_ID_OCR_PARAGRAPH:
+			// Re-run OCR on the last selection when the mode is toggled
+			if (_viv_ocr_last_src_rect.right > _viv_ocr_last_src_rect.left &&
+				_viv_ocr_last_src_rect.bottom > _viv_ocr_last_src_rect.top &&
+				!_viv_ocr_busy) {
+				_viv_ocr_run(_viv_ocr_last_src_rect);
+			}
 			break;
 	}
 }

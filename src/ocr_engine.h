@@ -20,6 +20,11 @@ void ocr_shutdown(void);
 // Caller must free with ocr_free_result.
 wchar_t* ocr_recognize_hbitmap(HBITMAP hbitmap, RECT srcRect);
 
+// Paragraph-aware version: uses ResultIterator to merge lines within each
+// paragraph into flowing text, separated by blank lines between paragraphs.
+// Otherwise same contract as ocr_recognize_hbitmap.
+wchar_t* ocr_recognize_hbitmap_paragraphs(HBITMAP hbitmap, RECT srcRect);
+
 // Free result from ocr_recognize_hbitmap
 void ocr_free_result(wchar_t *p);
 

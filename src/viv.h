@@ -225,6 +225,7 @@ enum
 	VIV_ID_OCR_TOGGLE,
 	VIV_ID_OCR_COPY,
 	VIV_ID_OCR_CLEAR,
+	VIV_ID_OCR_PARAGRAPH,
 };
 
 #include "version.h"

@@ -8,6 +8,7 @@ static HWND g_edit_hwnd = NULL;
 static HWND g_copy_hwnd = NULL;
 static HWND g_clear_hwnd = NULL;
 static HWND g_label_hwnd = NULL;
+static HWND g_para_hwnd = NULL;
 static const int PANEL_W = OCR_PANEL_WIDTH;
 static const int MARGIN = 8;
 static const int BTN_H = 24;
@@ -55,6 +56,16 @@ void ocr_panel_create(HWND parent) {
         MARGIN + (PANEL_W - MARGIN*3)/2 + MARGIN, 0, (PANEL_W - MARGIN*3)/2, BTN_H, g_panel_hwnd, (HMENU)VIV_ID_OCR_CLEAR, os_hinstance, NULL);
     SendMessage(g_clear_hwnd, WM_SETFONT, (WPARAM)hFont, TRUE);
 
+    // Paragraph checkbox (between buttons and edit, above copy/clear)
+    wchar_t paraText[64];
+    string_copy_utf8_string(paraText, localization_get_string(LOCALIZATION_ID_OCR_PARAGRAPH));
+    if (paraText[0]==0) wcscpy_s(paraText, 64, L"Merge paragraphs");
+    g_para_hwnd = CreateWindowExW(0, L"BUTTON", paraText, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | WS_TABSTOP,
+        MARGIN, 0, PANEL_W - MARGIN*2, BTN_H, g_panel_hwnd, (HMENU)VIV_ID_OCR_PARAGRAPH, os_hinstance, NULL);
+    SendMessage(g_para_hwnd, WM_SETFONT, (WPARAM)hFont, TRUE);
+    // Default: checked (paragraph mode ON)
+    Button_SetCheck(g_para_hwnd, BST_CHECKED);
+
     // Initially hidden
     ShowWindow(g_panel_hwnd, SW_HIDE);
 }
@@ -66,6 +77,7 @@ void ocr_panel_destroy(void) {
     g_copy_hwnd = NULL;
     g_clear_hwnd = NULL;
     g_label_hwnd = NULL;
+    g_para_hwnd = NULL;
 }
 
 void ocr_panel_show(BOOL show) {
@@ -100,6 +112,16 @@ void ocr_panel_clear(void) {
     ocr_panel_set_text(L"");
 }
 
+BOOL ocr_panel_get_paragraph(void) {
+    if (!g_para_hwnd) return TRUE; // default on
+    return (Button_GetCheck(g_para_hwnd) == BST_CHECKED);
+}
+
+void ocr_panel_set_paragraph(BOOL on) {
+    if (!g_para_hwnd) return;
+    Button_SetCheck(g_para_hwnd, on ? BST_CHECKED : BST_UNCHECKED);
+}
+
 void ocr_panel_on_size(RECT clientRect) {
     if (!g_panel_hwnd) return;
     int totalW = clientRect.right - clientRect.left;
@@ -117,8 +139,13 @@ void ocr_panel_on_size(RECT clientRect) {
     int labelY = MARGIN;
     SetWindowPos(g_label_hwnd, NULL, MARGIN, labelY, innerW, LABEL_H, SWP_NOZORDER);
     int editY = labelY + LABEL_H + 4;
+    int paraY = 0;
     int btnY = totalH - BTN_H - MARGIN;
-    int editH = btnY - editY - MARGIN;
+    // Checkbox sits above the buttons
+    paraY = btnY - BTN_H - 2;
+    if (paraY < editY + 40) paraY = editY + 40;
+    SetWindowPos(g_para_hwnd, NULL, MARGIN, paraY, innerW, BTN_H, SWP_NOZORDER);
+    int editH = paraY - editY - MARGIN;
     if (editH < 40) editH = 40;
     SetWindowPos(g_edit_hwnd, NULL, MARGIN, editY, innerW, editH, SWP_NOZORDER);
     int btnW = (innerW - MARGIN)/2;
@@ -151,7 +178,7 @@ static LRESULT CALLBACK panel_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         }
         case WM_COMMAND: {
             WORD id = LOWORD(wParam);
-            if (id == VIV_ID_OCR_COPY || id == VIV_ID_OCR_CLEAR) {
+            if (id == VIV_ID_OCR_COPY || id == VIV_ID_OCR_CLEAR || id == VIV_ID_OCR_PARAGRAPH) {
                 // Forward to parent
                 SendMessage(GetParent(hwnd), WM_COMMAND, wParam, lParam);
                 return 0;

@@ -302,6 +302,7 @@ static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] =
 	"OCR Result",
 	"&Copy",
 	"C&lear",
+	"&Merge paragraphs",
 	"Recognizing...",
 	"No image.",
 	"OCR failed.",

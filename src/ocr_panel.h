@@ -18,6 +18,8 @@ void ocr_panel_set_status(const wchar_t *status);
 void ocr_panel_on_size(RECT clientRect);
 HWND ocr_panel_get_hwnd(void);
 void ocr_panel_clear(void);
+BOOL ocr_panel_get_paragraph(void);
+void ocr_panel_set_paragraph(BOOL on);
 
 #ifdef __cplusplus
 }
